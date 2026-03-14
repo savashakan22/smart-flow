@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 type Props = {
   theme: ThemeMode;
-  onToggleTheme: () => void;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
 export default function OverviewPage({ theme, onToggleTheme }: Props) {

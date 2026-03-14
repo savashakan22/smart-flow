@@ -8,7 +8,7 @@ import type { ThemeMode } from "../types/dashboard";
 
 type Props = {
   theme: ThemeMode;
-  onToggleTheme: () => void;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
 export default function DetailPage({ theme, onToggleTheme }: Props) {

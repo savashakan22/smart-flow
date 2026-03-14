@@ -11,9 +11,9 @@ export const metrics: Metric[] = [
     max: 14,
     idealMin: 5.8,
     idealMax: 6.5,
-    statusText: "Optimal aralıkta",
+    statusText: "Optimal",
     description:
-      "Besin çözeltisinin asitlik-bazlık dengesini gösterir. Bitki besin alımı için kritik değişkendir.",
+      "Besin çözeltisinin asitlik-bazlık dengesini gösterir.",
     trend: "stable",
     lastUpdated: "2 dk önce",
   },
@@ -29,7 +29,7 @@ export const metrics: Metric[] = [
     idealMax: 2.2,
     statusText: "Dengeli",
     description:
-      "Besin çözeltisindeki iyon yoğunluğunu gösterir. Gübreleme seviyesinin takibinde kullanılır.",
+      "Besin çözeltisindeki iyon yoğunluğunu gösterir.",
     trend: "up",
     lastUpdated: "2 dk önce",
   },
@@ -45,7 +45,7 @@ export const metrics: Metric[] = [
     idealMax: 24,
     statusText: "İdeal",
     description:
-      "Kök bölgesi ve çözeltinin kararlılığı açısından önemlidir. Fazla yüksek sıcaklık çözünmüş oksijeni azaltabilir.",
+      "Kök bölgesi ve çözeltinin kararlılığı açısından önemlidir.",
     trend: "stable",
     lastUpdated: "3 dk önce",
   },
@@ -61,7 +61,7 @@ export const metrics: Metric[] = [
     idealMax: 28,
     statusText: "Normal",
     description:
-      "Yaprak gelişimi ve genel ortam kararlılığı için izlenir. Işık ve fan yönetimiyle ilişkilidir.",
+      "Yaprak gelişimi ve genel ortam kararlılığı için izlenir.",
     trend: "down",
     lastUpdated: "1 dk önce",
   },
@@ -93,7 +93,7 @@ export const metrics: Metric[] = [
     idealMax: 100,
     statusText: "Yeterli",
     description:
-      "Rezervuar doluluk oranını gösterir. Düşük seviyelerde pompa ve besleme dengesiz çalışabilir.",
+      "Rezervuar doluluk oranını gösterir.",
     trend: "down",
     lastUpdated: "5 dk önce",
   },

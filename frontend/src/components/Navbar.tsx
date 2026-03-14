@@ -6,22 +6,18 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <div className="navbar__brand">
-        <Link to="/" className="navbar__logoText">
-          SF
-        </Link>
-
+      <Link to="/" className="navbar__brand navbar__brand--link">
         <div>
           <h1>SmartFlow Dashboard</h1>
           <p>Hydroponic Monitoring Interface</p>
         </div>
-      </div>
+      </Link>
 
       <nav className="navbar__nav">
-
         <div className="nav-dropdown">
           <button className="nav-link" type="button">
             Detaylı Bilgiler
+            <span className="nav-link-arrow"></span>
           </button>
 
           <div className="nav-dropdown__menu">

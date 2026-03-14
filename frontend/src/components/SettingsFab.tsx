@@ -3,7 +3,7 @@ import type { ThemeMode } from "../types/dashboard";
 
 type SettingsFabProps = {
   theme: ThemeMode;
-  onToggleTheme: () => void;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
 export default function SettingsFab({
@@ -18,33 +18,38 @@ export default function SettingsFab({
         type="button"
         className="settings-fab__button"
         onClick={() => setOpen((prev) => !prev)}
-        aria-label="Ayarları aç"
+        aria-label="Ayarlar"
       >
         ⚙
       </button>
-
-      {open && (
-        <div className="settings-panel">
-          <div className="settings-panel__header">
-            <h3>Ayarlar</h3>
-          </div>
-
-          <div className="settings-row">
-            <span>Tema</span>
-
+    
+      <div className={`settings-panel ${open ? "open" : "closed"}`}>
+        <div className="settings-panel__header">
+          <h3>Ayarlar</h3>
+        </div>
+    
+        <div className="settings-row">
+          <span>Tema</span>
+    
+          <div className={`theme-switcher ${theme}`}>
+            <div className="theme-switcher__pill" />
+    
             <button
-              type="button"
-              className={`theme-switch ${theme === "dark" ? "dark" : "light"}`}
-              onClick={onToggleTheme}
+              className={`theme-switcher__option ${theme === "light" ? "active" : ""}`}
+              onClick={() => onToggleTheme("light")}
             >
-              <span className="theme-switch__thumb" />
-              <span className="theme-switch__label">
-                {theme === "dark" ? "Dark" : "Light"}
-              </span>
+              Light
+            </button>
+    
+            <button
+              className={`theme-switcher__option ${theme === "dark" ? "active" : ""}`}
+              onClick={() => onToggleTheme("dark")}
+            >
+              Dark
             </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

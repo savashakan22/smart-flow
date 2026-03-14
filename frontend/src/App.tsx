@@ -20,9 +20,7 @@ export default function App() {
         element={
           <OverviewPage
             theme={theme}
-            onToggleTheme={() =>
-              setTheme((prev) => (prev === "light" ? "dark" : "light"))
-            }
+            onToggleTheme={(mode) => setTheme(mode)}
           />
         }
       />
@@ -32,9 +30,7 @@ export default function App() {
         element={
           <DetailPage
             theme={theme}
-            onToggleTheme={() =>
-              setTheme((prev) => (prev === "light" ? "dark" : "light"))
-            }
+            onToggleTheme={(mode) => setTheme(mode)}
           />
         }
       />
