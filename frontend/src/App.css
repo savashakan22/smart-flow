@@ -61,7 +61,7 @@ body {
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 button,
@@ -76,12 +76,10 @@ a {
 .app-shell {
   width: 100%;
   min-height: 100vh;
-  height: 100vh;
   padding: 20px;
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .navbar {
@@ -210,9 +208,7 @@ a {
 .overview-page-only,
 .detail-page-only {
   flex: 1;
-  min-height: 0;
   margin-top: 20px;
-  overflow: hidden;
 }
 
 .overview-section,
@@ -356,6 +352,7 @@ a {
 
 .detail-page-topbar {
   margin-bottom: 16px;
+  padding-top: 4px;
 }
 
 .back-button {
@@ -380,7 +377,6 @@ a {
 
 .detail-panel {
   padding: 24px;
-  overflow: auto;
 }
 
 .detail-panel__description {

@@ -18,9 +18,6 @@ export default function Navbar() {
       </div>
 
       <nav className="navbar__nav">
-        <Link to="/" className="nav-link nav-link--router">
-          Overview
-        </Link>
 
         <div className="nav-dropdown">
           <button className="nav-link" type="button">
