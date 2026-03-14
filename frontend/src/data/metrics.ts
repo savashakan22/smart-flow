@@ -13,13 +13,13 @@ export const metrics: Metric[] = [
     idealMax: 6.5,
     statusText: "Optimal",
     description:
-      "Besin çözeltisinin asitlik-bazlık dengesini gösterir.",
+      "pH",
     trend: "stable",
     lastUpdated: "2 dk önce",
   },
   {
     id: "ec",
-    title: "Electrical Conductivity",
+    title: "EC",
     shortLabel: "EC",
     unit: "mS/cm",
     value: 1.8,
@@ -29,13 +29,13 @@ export const metrics: Metric[] = [
     idealMax: 2.2,
     statusText: "Dengeli",
     description:
-      "Besin çözeltisindeki iyon yoğunluğunu gösterir.",
+      "EC",
     trend: "up",
     lastUpdated: "2 dk önce",
   },
   {
     id: "water-temp",
-    title: "Water Temperature",
+    title: "Su Sıcaklığı",
     shortLabel: "Su Sıcaklığı",
     unit: "°C",
     value: 22.4,
@@ -45,13 +45,13 @@ export const metrics: Metric[] = [
     idealMax: 24,
     statusText: "İdeal",
     description:
-      "Kök bölgesi ve çözeltinin kararlılığı açısından önemlidir.",
+      "Su sıcaklığ",
     trend: "stable",
     lastUpdated: "3 dk önce",
   },
   {
     id: "air-temp",
-    title: "Air Temperature",
+    title: "Hava Sıcaklığı",
     shortLabel: "Hava Sıcaklığı",
     unit: "°C",
     value: 24.8,
@@ -61,13 +61,13 @@ export const metrics: Metric[] = [
     idealMax: 28,
     statusText: "Normal",
     description:
-      "Yaprak gelişimi ve genel ortam kararlılığı için izlenir.",
+      "Yaprak gelişimi ve genel ortam kararlılığı için izlenir",
     trend: "down",
     lastUpdated: "1 dk önce",
   },
   {
     id: "humidity",
-    title: "Humidity",
+    title: "Nem",
     shortLabel: "Nem",
     unit: "%",
     value: 61,
@@ -77,13 +77,13 @@ export const metrics: Metric[] = [
     idealMax: 70,
     statusText: "Uygun",
     description:
-      "Ortam nemi bitki transpirasyonu ve hava kalitesi açısından önemlidir.",
+      "Ortamdaki nem oranını gösterir",
     trend: "stable",
     lastUpdated: "1 dk önce",
   },
   {
     id: "water-level",
-    title: "Water Level",
+    title: "Su Seviyesi",
     shortLabel: "Su Seviyesi",
     unit: "%",
     value: 73,
@@ -93,7 +93,7 @@ export const metrics: Metric[] = [
     idealMax: 100,
     statusText: "Yeterli",
     description:
-      "Rezervuar doluluk oranını gösterir.",
+      "Su doluluk oranını gösterir",
     trend: "down",
     lastUpdated: "5 dk önce",
   },
