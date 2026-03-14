@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { ThemeMode } from "../types/dashboard";
 
 type SettingsFabProps = {
@@ -11,9 +11,27 @@ export default function SettingsFab({
   onToggleTheme,
 }: SettingsFabProps) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div className="settings-fab">
+    <div className="settings-fab" ref={containerRef}>
       <button
         type="button"
         className="settings-fab__button"
