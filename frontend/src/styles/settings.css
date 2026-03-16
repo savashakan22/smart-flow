@@ -9,7 +9,7 @@
   width: 58px;
   height: 58px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 50%;
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
@@ -17,7 +17,6 @@
 }
 
 .settings-fab__button:hover {
-  transform: translateY(-2px);
   background: var(--surface-2);
   border-color: var(--border-strong);
 }

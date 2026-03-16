@@ -10,8 +10,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 28px 0;
+  justify-content: flex-start;
+  padding: 0 0 28px;
 }
 
 .content-shell {
@@ -21,11 +21,16 @@
 
 .content-shell--overview {
   width: min(90%, 1380px);
+  margin-top: 22px;
 }
 
 .content-shell--detail {
   width: min(90%, 1180px);
-  margin: 0 auto;
+  min-height: calc(100vh - 92px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 22px auto 0;
 }
 
 .overview-page-only,
@@ -72,14 +77,41 @@
   display: none;
 }
 
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.navbar__inner {
+  width: min(90%, 1440px);
+  height: 68px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.navbar__title {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  padding: 0;
+}
+
 @media (max-width: 960px) {
   .dashboard-layout {
     grid-template-columns: 1fr;
   }
 
   .dashboard-content {
-    padding: 16px 0 22px;
-    justify-content: flex-start;
+    padding: 0 0 22px;
   }
 
   detail-page-only.content-shell--detail {
@@ -93,6 +125,16 @@
     width: min(100% - 32px, 1200px);
   }
 
+  .content-shell--overview,
+  .content-shell--detail {
+    margin-top: 16px;
+  }
+
+  .content-shell--detail {
+    min-height: auto;
+    justify-content: flex-start;
+  }
+
   .mobile-topbar {
     position: sticky;
     top: 0;
@@ -100,7 +142,7 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 14px 16px;
+    padding: 10px 16px;
     background: color-mix(in srgb, var(--bg) 86%, transparent);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
@@ -116,5 +158,14 @@
     margin: 4px 0 0;
     font-size: 0.82rem;
     color: var(--text-soft);
+  }
+
+  .navbar {
+    top: 71px;
+  }
+
+  .navbar__inner {
+    width: min(100% - 32px, 1200px);
+    height: 60px;
   }
 }

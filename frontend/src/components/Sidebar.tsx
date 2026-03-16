@@ -1,5 +1,5 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { metrics } from "../data/metrics";
 
 export default function Sidebar() {
@@ -9,6 +9,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const isOverview = location.pathname === "/";
   const activeMetricId = useMemo(() => {
     const match = location.pathname.match(/^\/detail\/(.+)$/);
     return match?.[1] ?? null;
@@ -31,7 +32,7 @@ export default function Sidebar() {
       <div className="mobile-topbar">
         <button
           type="button"
-          className={`hamburger-button ${mobileOpen ? "open" : ""}`}
+          className="hamburger-button"
           aria-label="Menüyü aç"
           onClick={() => setMobileOpen(true)}
         >
@@ -39,23 +40,15 @@ export default function Sidebar() {
           <span />
           <span />
         </button>
-
-        <Link to="/" className="mobile-topbar__brand">
-          <div>
-            <h1>SmartFlow Dashboard</h1>
-            <p>Hydroponic Monitoring Interface</p>
-          </div>
-        </Link>
       </div>
 
       <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
         <div className="sidebar__top">
-          <Link to="/" className="sidebar__brand">
-            <div>
-              <h1>SmartFlow Dashboard</h1>
-              <p>Hydroponic Monitoring Interface</p>
+          {!collapsed && (
+            <div className="sidebar__brand">
+              <h2>Menü</h2>
             </div>
-          </Link>
+          )}
 
           <button
             type="button"
@@ -63,14 +56,23 @@ export default function Sidebar() {
             aria-label={collapsed ? "Sidebar aç" : "Sidebar kapat"}
             onClick={() => setCollapsed((prev) => !prev)}
           >
-            {collapsed ? "→" : "←"}
+            <span />
+            <span />
+            <span />
           </button>
         </div>
 
-        <div className="sidebar__section">
-          <p className="sidebar__section-title">Detaylı Bilgiler</p>
+        {!collapsed && (
+          <nav className="sidebar__nav">
+            <button
+              type="button"
+              className={`sidebar__item ${isOverview ? "active" : ""}`}
+              onClick={() => handleNavigate("/")}
+            >
+              <span className="sidebar__icon"></span>
+              <span>Dashboard</span>
+            </button>
 
-          <div className="sidebar__menu">
             {metrics.map((metric) => (
               <button
                 key={metric.id}
@@ -80,15 +82,12 @@ export default function Sidebar() {
                 }`}
                 onClick={() => handleNavigate(`/detail/${metric.id}`)}
               >
+                <span className="sidebar__icon"></span>
                 <span>{metric.shortLabel}</span>
-                <small>
-                  {metric.value}
-                  {metric.unit}
-                </small>
               </button>
             ))}
-          </div>
-        </div>
+          </nav>
+        )}
       </aside>
 
       <div className={`mobile-drawer ${mobileOpen ? "open" : ""}`}>
@@ -99,7 +98,7 @@ export default function Sidebar() {
 
         <aside className="mobile-drawer__panel">
           <div className="mobile-drawer__header">
-            <h2 className="mobile-drawer__title">Detaylı Bilgiler</h2>
+            <h2 className="mobile-drawer__title">Menü</h2>
             <button
               type="button"
               className="mobile-drawer__close"
@@ -111,6 +110,13 @@ export default function Sidebar() {
           </div>
 
           <div className="mobile-drawer__content">
+            <button
+              type="button"
+              className={`mobile-drawer__item ${isOverview ? "active" : ""}`}
+              onClick={() => handleNavigate("/")}
+            >
+              Dashboard
+            </button>
 
             {metrics.map((metric) => (
               <button
@@ -121,11 +127,7 @@ export default function Sidebar() {
                 }`}
                 onClick={() => handleNavigate(`/detail/${metric.id}`)}
               >
-                <span>{metric.shortLabel}</span>
-                <small>
-                  {metric.value}
-                  {metric.unit}
-                </small>
+                {metric.shortLabel}
               </button>
             ))}
           </div>
