@@ -69,18 +69,6 @@ export default function Sidebar() {
         </div>
 
         <div className="sidebar__section">
-          <p className="sidebar__section-title">Navigasyon</p>
-
-          <button
-            type="button"
-            className={`sidebar__item ${isOverview ? "active" : ""}`}
-            onClick={() => handleNavigate("/")}
-          >
-            <span>Genel Görünüm</span>
-          </button>
-        </div>
-
-        <div className="sidebar__section">
           <p className="sidebar__section-title">Detaylı Bilgiler</p>
 
           <div className="sidebar__menu">

@@ -10,7 +10,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28px 0 28px 0;
+  justify-content: center;
+  padding: 28px 0;
 }
 
 .content-shell {
@@ -30,6 +31,13 @@
 .overview-page-only,
 .detail-page-only {
   min-width: 0;
+}
+
+.detail-page-only.content-shell--detail {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .detail-page-topbar {
@@ -71,6 +79,12 @@
 
   .dashboard-content {
     padding: 16px 0 22px;
+    justify-content: flex-start;
+  }
+
+  detail-page-only.content-shell--detail {
+    min-height: auto;
+    justify-content: flex-start;
   }
 
   .content-shell,
