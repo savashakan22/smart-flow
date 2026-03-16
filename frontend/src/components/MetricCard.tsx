@@ -38,6 +38,7 @@ export default function MetricCard({
           max={metric.max}
           label={metric.shortLabel}
           unit={metric.unit}
+          size="sm"
         />
       </div>
 

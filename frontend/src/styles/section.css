@@ -50,6 +50,12 @@
   border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
 .metrics-grid,
 .metrics-grid--compact {
   display: grid;

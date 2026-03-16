@@ -1,3 +1,16 @@
+.metric-card {
+  padding: 16px;
+  min-height: 260px;
+}
+
+.metric-card__header h3 {
+  font-size: 0.9rem;
+}
+
+.metric-card__bottom {
+  font-size: 0.8rem;
+}
+
 .metric-card,
 .metric-card--compact {
   width: 100%;
@@ -39,7 +52,7 @@
 }
 
 .metric-card__label {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -56,6 +69,15 @@
   font-weight: 700;
   border: 1px solid transparent;
   white-space: nowrap;
+}
+
+.metric-card h3 {
+  font-size: 0.75rem;
+}
+
+.metric-card__status {
+  font-size: 0.75rem;
+  padding: 4px 10px;
 }
 
 .trend--up {
@@ -80,7 +102,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 2px 0 4px;
+  margin: 0;
 }
 
 .metric-card__bottom {

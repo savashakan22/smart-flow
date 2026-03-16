@@ -3,8 +3,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 240px;
-  height: 240px;
+  width: 160px;
+  height: 160px;
   flex-shrink: 0;
 }
 
@@ -43,11 +43,11 @@
   justify-content: center;
   gap: 6px;
   text-align: center;
-  padding: 18px;
+  padding: 10px;
 }
 
 .circle-meter__label {
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--text-muted);
 }
@@ -56,7 +56,7 @@
   display: flex;
   align-items: flex-end;
   gap: 5px;
-  font-size: 2.05rem;
+  font-size: 1.35rem;
   line-height: 1;
   letter-spacing: -0.04em;
   color: var(--text);
@@ -70,12 +70,12 @@
 }
 
 .circle-meter__range {
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   color: var(--text-soft);
 }
 
 .circle-meter--sm .circle-meter__label {
-  font-size: 0.76rem;
+  font-size: 0.65rem;
 }
 
 .circle-meter--sm .circle-meter__value {

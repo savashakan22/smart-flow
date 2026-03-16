@@ -16,12 +16,13 @@
 
 .content-shell {
   width: 70%;
-  height: 900%;
+  height: 100%;
   min-width: 0;
 }
 
 .content-shell--overview {
   margin-top: 22px;
+  width: min(96%, 1680px);
 }
 
 .content-shell--detail {
@@ -48,27 +49,6 @@
   align-items: center;
   justify-content: flex-start;
   margin-bottom: 18px;
-}
-
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 46px;
-  padding: 0 18px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-button:hover {
-  transform: translateY(-1px);
-  background: var(--surface-2);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
 }
 
 .mobile-topbar {
@@ -159,7 +139,7 @@
   }
 
   .navbar {
-    top: 71px;
+    display: none;
   }
 
   .navbar__inner {
