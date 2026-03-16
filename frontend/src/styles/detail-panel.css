@@ -163,7 +163,12 @@
     border-radius: 18px;
   }
 
+  .detail-box span {
+    margin-top: 1vh;
+  }
+
   .detail-box strong {
     font-size: 1.22rem;
+    margin-top: 0;
   }
 }

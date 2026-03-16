@@ -9,7 +9,6 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isOverview = location.pathname === "/";
   const activeMetricId = useMemo(() => {
     const match = location.pathname.match(/^\/detail\/(.+)$/);
     return match?.[1] ?? null;
@@ -64,14 +63,6 @@ export default function Sidebar() {
 
         {!collapsed && (
           <nav className="sidebar__nav">
-            <button
-              type="button"
-              className={`sidebar__item ${isOverview ? "active" : ""}`}
-              onClick={() => handleNavigate("/")}
-            >
-              <span className="sidebar__icon"></span>
-              <span>Dashboard</span>
-            </button>
 
             {metrics.map((metric) => (
               <button
@@ -110,13 +101,6 @@ export default function Sidebar() {
           </div>
 
           <div className="mobile-drawer__content">
-            <button
-              type="button"
-              className={`mobile-drawer__item ${isOverview ? "active" : ""}`}
-              onClick={() => handleNavigate("/")}
-            >
-              Dashboard
-            </button>
 
             {metrics.map((metric) => (
               <button

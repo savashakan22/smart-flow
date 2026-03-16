@@ -11,26 +11,24 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 0 28px;
+  padding: 0;
 }
 
 .content-shell {
-  width: min(90%, 1440px);
+  width: 70%;
+  height: 900%;
   min-width: 0;
 }
 
 .content-shell--overview {
-  width: min(90%, 1380px);
   margin-top: 22px;
 }
 
 .content-shell--detail {
-  width: min(90%, 1180px);
-  min-height: calc(100vh - 92px);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: 22px auto 0;
+  margin: 0 auto 0;
 }
 
 .overview-page-only,
@@ -39,7 +37,7 @@
 }
 
 .detail-page-only.content-shell--detail {
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh);
   display: flex;
   flex-direction: column;
   justify-content: center;
