@@ -1,9 +1,9 @@
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 import MetricCard from "../components/MetricCard";
 import SettingsFab from "../components/SettingsFab";
-import Sidebar from "../components/Sidebar";
 import { metrics } from "../data/metrics";
 import type { ThemeMode } from "../types/dashboard";
-import { useNavigate } from "react-router-dom";
 
 type Props = {
   theme: ThemeMode;
@@ -18,8 +18,8 @@ export default function OverviewPage({ theme, onToggleTheme }: Props) {
       <Sidebar />
 
       <div className="dashboard-content">
-        <main className="overview-page-only">
-          <section className="overview-section full-page">
+        <main className="overview-page-only content-shell content-shell--overview">
+          <section className="overview-section">
             <div className="section-heading">
               <div>
                 <p className="section-heading__eyebrow">Genel Görünüm</p>

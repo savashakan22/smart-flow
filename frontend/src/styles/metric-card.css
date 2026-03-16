@@ -1,0 +1,112 @@
+.metric-card,
+.metric-card--compact {
+  width: 100%;
+  min-height: 280px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--primary) 10%, transparent), transparent 38%),
+    linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.metric-card:hover,
+.metric-card--compact:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.metric-card.active,
+.metric-card--compact.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent), var(--shadow-md);
+}
+
+.metric-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metric-card__label {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.metric-card__trend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.trend--up {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--success) 24%, transparent);
+}
+
+.trend--down {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--danger) 24%, transparent);
+}
+
+.trend--stable {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--warning) 24%, transparent);
+}
+
+.metric-card__meter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2px 0 4px;
+}
+
+.metric-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.metric-card__bottom span:last-child {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .metric-card,
+  .metric-card--compact {
+    min-height: 260px;
+    border-radius: 20px;
+  }
+
+  .metric-card__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

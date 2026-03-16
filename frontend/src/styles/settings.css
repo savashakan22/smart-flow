@@ -1,0 +1,131 @@
+.settings-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 80;
+}
+
+.settings-fab__button {
+  width: 58px;
+  height: 58px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.settings-fab__button:hover {
+  transform: translateY(-2px) rotate(8deg);
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+.settings-panel {
+  position: absolute;
+  right: 0;
+  bottom: 72px;
+  width: 290px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  transition: all 0.2s ease;
+}
+
+.settings-panel.closed {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.settings-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.settings-panel__header {
+  margin-bottom: 14px;
+}
+
+.settings-panel__header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-row > span {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.theme-switcher {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.theme-switcher__pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.24s ease;
+}
+
+.theme-switcher.light .theme-switcher__pill {
+  transform: translateX(0);
+}
+
+.theme-switcher.dark .theme-switcher__pill {
+  transform: translateX(100%);
+}
+
+.theme-switcher__option {
+  position: relative;
+  z-index: 1;
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-switcher__option.active {
+  color: var(--text);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .settings-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .settings-panel {
+    width: min(290px, calc(100vw - 32px));
+  }
+}

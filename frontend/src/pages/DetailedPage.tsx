@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import DetailPanel from "../components/DetailedPanel";
 import SettingsFab from "../components/SettingsFab";
@@ -13,7 +13,6 @@ type Props = {
 
 export default function DetailPage({ theme, onToggleTheme }: Props) {
   const { metricId } = useParams();
-  const navigate = useNavigate();
 
   const metric = useMemo(
     () => metrics.find((item) => item.id === metricId) ?? metrics[0],
@@ -25,16 +24,7 @@ export default function DetailPage({ theme, onToggleTheme }: Props) {
       <Sidebar />
 
       <div className="dashboard-content">
-        <main className="detail-page-only">
-          <div className="detail-page-topbar">
-            <button
-              type="button"
-              className="back-button"
-              onClick={() => navigate("/")}
-            >
-              ← Overview’a Dön
-            </button>
-          </div>
+        <main className="detail-page-only content-shell content-shell--detail">
 
           <DetailPanel metric={metric} />
         </main>
