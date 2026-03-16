@@ -1,0 +1,100 @@
+.circle-meter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+.circle-meter--sm {
+  width: 150px;
+  height: 150px;
+}
+
+.circle-meter--lg {
+  width: 240px;
+  height: 240px;
+}
+
+.circle-meter__svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.circle-meter__track {
+  stroke: color-mix(in srgb, var(--border) 85%, transparent);
+}
+
+.circle-meter__progress {
+  stroke: var(--primary);
+  transition: all 0.45s ease;
+}
+
+.circle-meter__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 10px;
+}
+
+.circle-meter__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.circle-meter__value {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--text);
+}
+
+.circle-meter__value span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.circle-meter__range {
+  font-size: 0.7rem;
+  color: var(--text-soft);
+}
+
+.circle-meter--sm .circle-meter__label {
+  font-size: 0.65rem;
+}
+
+.circle-meter--sm .circle-meter__value {
+  font-size: 1.3rem;
+}
+
+.circle-meter--sm .circle-meter__value span {
+  font-size: 0.72rem;
+  margin-bottom: 2px;
+}
+
+.circle-meter--sm .circle-meter__range {
+  font-size: 0.68rem;
+}
+
+@media (max-width: 760px) {
+  .circle-meter,
+  .circle-meter--lg {
+    width: 210px;
+    height: 210px;
+  }
+}

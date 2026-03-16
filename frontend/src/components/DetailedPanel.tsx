@@ -1,0 +1,67 @@
+import type { Metric } from "../types/dashboard";
+import CircleMeter from "./CircleMeter";
+
+type DetailedPanelProps = {
+  metric: Metric;
+};
+
+export default function DetailedPanel({ metric }: DetailedPanelProps) {
+  return (
+    <section className="detail-panel">
+      <div className="detail-panel__header">
+        <div>
+          <p className="detail-panel__eyebrow">Detaylı Görünüm</p>
+          <h2>{metric.title}</h2>
+          <p className="detail-panel__description">{metric.description}</p>
+        </div>
+
+        <span className="detail-panel__status-chip">{metric.statusText}</span>
+      </div>
+
+      <div className="detail-panel__body">
+        <div className="detail-panel__circle-area">
+          <div className="detail-panel__circle-wrap">
+            <h3 className="detail-panel__circle-title">{metric.shortLabel}</h3>
+
+            <CircleMeter
+              value={metric.value}
+              min={metric.min}
+              max={metric.max}
+              label={metric.shortLabel}
+              unit={metric.unit}
+              size="lg"
+            />
+          </div>
+        </div>
+
+        <div className="detail-panel__info-grid">
+          <article className="detail-box">
+            <span>Güncel Değer</span>
+            <strong>
+              {metric.value}
+              {metric.unit}
+            </strong>
+          </article>
+
+          <article className="detail-box">
+            <span>İdeal Aralık</span>
+            <strong>
+              {metric.min} - {metric.max}
+              {metric.unit}
+            </strong>
+          </article>
+
+          <article className="detail-box">
+            <span>Trend Durumu</span>
+            <strong>{metric.title}</strong>
+          </article>
+
+          <article className="detail-box">
+            <span>Son Güncelleme</span>
+            <strong>{metric.lastUpdated}</strong>
+          </article>
+        </div>
+      </div>
+    </section>
+  );
+}
