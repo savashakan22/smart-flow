@@ -1,4 +1,5 @@
 import type { Metric } from "../types/dashboard";
+import CircleMeter from "./CircleMeter";
 
 type MetricCardProps = {
   metric: Metric;
@@ -19,7 +20,7 @@ export default function MetricCard({
 }: MetricCardProps) {
   return (
     <button
-      className={`metric-card ${active ? "active" : ""}`}
+      className={`metric-card metric-card--compact ${active ? "active" : ""}`}
       onClick={() => onClick(metric.id)}
       type="button"
     >
@@ -30,9 +31,15 @@ export default function MetricCard({
         </span>
       </div>
 
-      <div className="metric-card__value">
-        {metric.value}
-        <span className="metric-card__unit">{metric.unit}</span>
+      <div className="metric-card__meter">
+        <CircleMeter
+          value={metric.value}
+          min={metric.min}
+          max={metric.max}
+          label={metric.shortLabel}
+          unit={metric.unit}
+          size="sm"
+        />
       </div>
 
       <div className="metric-card__bottom">

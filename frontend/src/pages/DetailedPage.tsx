@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 import DetailPanel from "../components/DetailedPanel";
 import SettingsFab from "../components/SettingsFab";
 import { metrics } from "../data/metrics";
@@ -21,24 +21,26 @@ export default function DetailPage({ theme, onToggleTheme }: Props) {
   );
 
   return (
-    <div className="app-shell">
-      <Navbar />
+    <div className="dashboard-layout">
+      <Sidebar />
 
-      <main className="detail-page-only">
-        <div className="detail-page-topbar">
-          <button
-            type="button"
-            className="back-button"
-            onClick={() => navigate("/")}
-          >
-            ← Overview’a Dön
-          </button>
-        </div>
+      <div className="dashboard-content">
+        <main className="detail-page-only">
+          <div className="detail-page-topbar">
+            <button
+              type="button"
+              className="back-button"
+              onClick={() => navigate("/")}
+            >
+              ← Overview’a Dön
+            </button>
+          </div>
 
-        <DetailPanel metric={metric} />
-      </main>
+          <DetailPanel metric={metric} />
+        </main>
 
-      <SettingsFab theme={theme} onToggleTheme={onToggleTheme} />
+        <SettingsFab theme={theme} onToggleTheme={onToggleTheme} />
+      </div>
     </div>
   );
 }
