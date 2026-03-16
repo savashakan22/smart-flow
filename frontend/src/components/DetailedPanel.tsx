@@ -1,71 +1,65 @@
 import type { Metric } from "../types/dashboard";
 import CircleMeter from "./CircleMeter";
 
-type DetailPanelProps = {
+type DetailedPanelProps = {
   metric: Metric;
 };
 
-function getHealthPercent(metric: Metric) {
-  if (metric.value >= metric.idealMin && metric.value <= metric.idealMax) {
-    return 96;
-  }
-
-  const range = metric.max - metric.min;
-  const center = (metric.idealMin + metric.idealMax) / 2;
-  const distance = Math.abs(metric.value - center);
-  const penalty = (distance / range) * 100 * 1.6;
-  return Math.max(35, Math.round(100 - penalty));
-}
-
-export default function DetailPanel({ metric }: DetailPanelProps) {
-  const healthPercent = getHealthPercent(metric);
-
+export default function DetailedPanel({ metric }: DetailedPanelProps) {
   return (
     <section className="detail-panel">
       <div className="detail-panel__header">
         <div>
-          <p className="detail-panel__eyebrow">Detaylı Analiz</p>
+          <p className="detail-panel__eyebrow">Detaylı Görünüm</p>
           <h2>{metric.title}</h2>
           <p className="detail-panel__description">{metric.description}</p>
         </div>
 
-        <div className="detail-panel__status-chip">{metric.statusText}</div>
+        <span className="detail-panel__status-chip">{metric.statusText}</span>
       </div>
 
       <div className="detail-panel__body">
         <div className="detail-panel__circle-area">
-          <CircleMeter
-            value={metric.value}
-            min={metric.min}
-            max={metric.max}
-            label={metric.shortLabel}
-            unit={metric.unit}
-          />
+          <div className="detail-panel__circle-wrap">
+            <h3 className="detail-panel__circle-title">{metric.shortLabel}</h3>
+
+            <CircleMeter
+              value={metric.value}
+              min={metric.min}
+              max={metric.max}
+              label={metric.shortLabel}
+              unit={metric.unit}
+              size="lg"
+            />
+          </div>
         </div>
 
         <div className="detail-panel__info-grid">
-          <div className="detail-box">
-            <span>İdeal Aralık</span>
+          <article className="detail-box">
+            <span>Güncel Değer</span>
             <strong>
-              {metric.idealMin} - {metric.idealMax}
+              {metric.value}
               {metric.unit}
             </strong>
-          </div>
+          </article>
 
-          <div className="detail-box">
-            <span>Güncel Durum</span>
-            <strong>{metric.statusText}</strong>
-          </div>
+          <article className="detail-box">
+            <span>İdeal Aralık</span>
+            <strong>
+              {metric.min} - {metric.max}
+              {metric.unit}
+            </strong>
+          </article>
 
-          <div className="detail-box">
-            <span>Sistem Skoru</span>
-            <strong>%{healthPercent}</strong>
-          </div>
+          <article className="detail-box">
+            <span>Trend Durumu</span>
+            <strong>{metric.title}</strong>
+          </article>
 
-          <div className="detail-box">
+          <article className="detail-box">
             <span>Son Güncelleme</span>
             <strong>{metric.lastUpdated}</strong>
-          </div>
+          </article>
         </div>
       </div>
     </section>

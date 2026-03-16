@@ -75,6 +75,23 @@
   border: 1px solid var(--border);
 }
 
+.detail-panel__circle-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.detail-panel__circle-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
 .detail-panel__info-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -91,17 +108,24 @@
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 10px;
   box-shadow: var(--shadow-sm);
 }
 
 .detail-box span {
-  font-size: 0.9rem;
+  margin: 2vh 0 0 1vh;
+  font-size: 1rem;
   color: var(--text-muted);
 }
 
 .detail-box strong {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  margin-top: 1vh;
+  margin-left: 3vh;
   font-size: 1.45rem;
   line-height: 1.15;
   letter-spacing: -0.03em;

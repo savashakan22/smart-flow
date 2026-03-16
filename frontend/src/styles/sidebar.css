@@ -15,8 +15,24 @@
 }
 
 .sidebar.collapsed {
-  width: 96px;
-  padding-inline: 14px;
+  width: 72px;
+  padding: 16px 10px;
+  align-items: center;
+}
+
+.sidebar.collapsed .sidebar__brand,
+.sidebar.collapsed .sidebar__section {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar__top {
+  width: 100%;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar__toggle {
+  width: 44px;
+  height: 44px;
 }
 
 .sidebar__top {

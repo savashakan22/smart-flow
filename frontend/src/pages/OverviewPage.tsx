@@ -22,7 +22,6 @@ export default function OverviewPage({ theme, onToggleTheme }: Props) {
           <section className="overview-section">
             <div className="section-heading">
               <div>
-                <p className="section-heading__eyebrow">Genel Görünüm</p>
                 <h2>Sistem Genel Bakış</h2>
               </div>
               <span className="section-heading__badge">Overview</span>
