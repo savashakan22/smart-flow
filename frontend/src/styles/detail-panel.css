@@ -5,7 +5,7 @@
   border-radius: var(--radius-xl);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
-  margin: auto 0;
+  margin: 0;
 }
 
 .detail-panel__header {
