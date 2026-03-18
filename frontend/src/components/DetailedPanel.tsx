@@ -46,7 +46,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
           <article className="detail-box">
             <span>İdeal Aralık</span>
             <strong>
-              {metric.min} - {metric.max}
+              {metric.idealMin} - {metric.idealMax}
               {metric.unit}
             </strong>
           </article>

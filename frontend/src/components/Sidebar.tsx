@@ -110,14 +110,6 @@ export default function Sidebar() {
           </div>
 
           <div className="mobile-drawer__content">
-            <button
-              type="button"
-              className={`mobile-drawer__item ${isOverview ? "active" : ""}`}
-              onClick={() => handleNavigate("/")}
-            >
-              Dashboard
-            </button>
-
             {metrics.map((metric) => (
               <button
                 key={metric.id}
