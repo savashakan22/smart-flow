@@ -9,7 +9,6 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isOverview = location.pathname === "/";
   const activeMetricId = useMemo(() => {
     const match = location.pathname.match(/^\/detail\/(.+)$/);
     return match?.[1] ?? null;
@@ -54,7 +53,7 @@ export default function Sidebar() {
         <div className="sidebar__top">
           {!collapsed && (
             <div className="sidebar__brand">
-              <h2>Menü</h2>
+              <h2>Menu</h2>
             </div>
           )}
 

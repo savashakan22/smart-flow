@@ -8,9 +8,9 @@ type MetricCardProps = {
 };
 
 function getTrendLabel(trend: Metric["trend"]) {
-  if (trend === "up") return "Yükseliyor";
-  if (trend === "down") return "Düşüyor";
-  return "Sabit";
+  if (trend === "up") return "Rising";
+  if (trend === "down") return "Falling";
+  return "Stable";
 }
 
 export default function MetricCard({

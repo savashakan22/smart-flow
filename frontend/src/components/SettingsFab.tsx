@@ -43,11 +43,11 @@ export default function SettingsFab({
     
       <div className={`settings-panel ${open ? "open" : "closed"}`}>
         <div className="settings-panel__header">
-          <h3>Ayarlar</h3>
+          <h3>Settings</h3>
         </div>
     
         <div className="settings-row">
-          <span>Tema</span>
+          <span>Theme</span>
     
           <div className={`theme-switcher ${theme}`}>
             <div className="theme-switcher__pill" />

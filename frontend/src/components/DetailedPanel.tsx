@@ -10,7 +10,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
     <section className="detail-panel">
       <div className="detail-panel__header">
         <div>
-          <p className="detail-panel__eyebrow">Detaylı Görünüm</p>
+          <p className="detail-panel__eyebrow">Detailed View</p>
           <h2>{metric.title}</h2>
           <p className="detail-panel__description">{metric.description}</p>
         </div>
@@ -36,7 +36,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
 
         <div className="detail-panel__info-grid">
           <article className="detail-box">
-            <span>Güncel Değer</span>
+            <span>Current Value</span>
             <strong>
               {metric.value}
               {metric.unit}
@@ -44,7 +44,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
           </article>
 
           <article className="detail-box">
-            <span>İdeal Aralık</span>
+            <span>Ideal Range</span>
             <strong>
               {metric.idealMin} - {metric.idealMax}
               {metric.unit}
@@ -52,12 +52,12 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
           </article>
 
           <article className="detail-box">
-            <span>Trend Durumu</span>
+            <span>Status</span>
             <strong>{metric.title}</strong>
           </article>
 
           <article className="detail-box">
-            <span>Son Güncelleme</span>
+            <span>Last Update</span>
             <strong>{metric.lastUpdated}</strong>
           </article>
         </div>
