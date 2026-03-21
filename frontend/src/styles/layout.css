@@ -9,27 +9,25 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: flex-start;
-  padding: 0;
+  padding: 0 0 24px;
 }
 
 .content-shell {
-  width: 70%;
-  height: 100%;
+  width: min(96%, 1680px);
   min-width: 0;
+  margin: 0 auto;
 }
 
 .content-shell--overview {
-  margin-top: 22px;
-  width: min(96%, 1680px);
+  margin-top: 0;
 }
 
 .content-shell--detail {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: 20px auto 0;
+  margin: 0 auto;
 }
 
 .overview-page-only,
@@ -73,16 +71,6 @@
   .content-shell--overview,
   .content-shell--detail {
     width: min(100% - 32px, 1200px);
-  }
-
-  .content-shell--overview,
-  .content-shell--detail {
-    margin-top: 16px;
-  }
-
-  .content-shell--detail {
-    min-height: auto;
-    justify-content: flex-start;
   }
 
   .mobile-topbar {

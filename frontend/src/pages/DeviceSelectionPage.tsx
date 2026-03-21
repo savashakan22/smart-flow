@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
@@ -34,15 +34,6 @@ export default function DeviceSelectionPage({
     { id: "device-c", name: "Soil Station C", location: "Open Area", status: "Offline" },
   ]);
 
-  const initials = useMemo(() => {
-    return user.fullName
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }, [user.fullName]);
-
   return (
     <main className="device-selection-page">
       <Navbar
@@ -60,14 +51,6 @@ export default function DeviceSelectionPage({
             system overview.
           </p>
         </div>
-
-        <button
-          className="device-profile-chip"
-          onClick={() => navigate("/profile")}
-        >
-          <span className="device-profile-chip__avatar">{initials}</span>
-          <span>Profile</span>
-        </button>
       </header>
 
       <section className="device-grid">
@@ -75,7 +58,7 @@ export default function DeviceSelectionPage({
           <button
             key={device.id}
             className="device-card"
-            onClick={() => navigate(`/dashboard/${device.id}`)}
+            onClick={() => navigate("/dashboard")}
           >
             <div className="device-card__top">
               <span className="device-card__badge">{device.status}</span>

@@ -11,9 +11,9 @@
 }
 
 .profile-settings-sidebar {
-  border: 1px solid var(--auth-border);
-  background: var(--auth-card-bg);
-  box-shadow: var(--auth-shadow);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
   border-radius: 24px;
   padding: 16px;
   height: fit-content;
@@ -26,7 +26,7 @@
   text-align: left;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-main);
+  color: var(--text);
   border-radius: 14px;
   padding: 12px 14px;
   cursor: pointer;
@@ -35,7 +35,7 @@
 
 .profile-settings-tab.is-active {
   background: rgba(37, 99, 235, 0.12);
-  color: var(--primary-accent);
+  color: var(--primary);
 }
 
 .profile-settings-content {

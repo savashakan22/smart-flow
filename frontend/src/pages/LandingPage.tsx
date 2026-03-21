@@ -38,11 +38,8 @@ export default function LandingPage({
           <div className="landing-actions">
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" className="landing-btn landing-btn--primary">
-                  Go to Dashboard
-                </Link>
-                <Link to="/profile" className="landing-btn landing-btn--secondary">
-                  Profile
+                <Link to="/devices" className="landing-btn landing-btn--primary">
+                  Go to Devices
                 </Link>
               </>
             ) : (

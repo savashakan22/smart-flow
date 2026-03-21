@@ -33,29 +33,6 @@
   font-weight: 700;
 }
 
-.device-profile-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface);
-  color: var(--text);
-  padding: 10px 14px;
-  cursor: pointer;
-}
-
-.device-profile-chip__avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--primary);
-  color: white;
-  font-weight: 800;
-}
-
 .device-grid {
   max-width: 1240px;
   margin: 0 auto;
@@ -111,4 +88,10 @@
 
 .device-card--add {
   border-style: dashed;
+}
+
+@media (max-width: 960px) {
+  .device-grid {
+    grid-template-columns: 1fr;
+  }
 }

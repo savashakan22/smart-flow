@@ -125,11 +125,6 @@ export default function App() {
 
         <Route
           path="/dashboard"
-          element={<Navigate to="/devices" replace />}
-        />
-
-        <Route
-          path="/dashboard/:deviceId"
           element={
             <OverviewPage
               theme={theme}
@@ -140,7 +135,7 @@ export default function App() {
         />
 
         <Route
-          path="/detail/:deviceId/:metricId"
+          path="/detail/:metricId"
           element={
             <DetailPage
               theme={theme}

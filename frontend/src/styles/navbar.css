@@ -9,6 +9,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 28px;
+  margin: 0 0 24px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   box-sizing: border-box;
@@ -48,25 +49,11 @@
   font-size: 1.05rem;
 }
 
-.landing-page .global-navbar,
-.auth-page .global-navbar,
-.profile-page .global-navbar,
-.device-selection-page .global-navbar {
-  max-width: 1240px;
-  margin: 0 auto;
-}
-
-.dashboard-content > .global-navbar {
-  width: min(90%, 1440px);
-  margin: 0 auto;
-  padding-left: 0;
-  padding-right: 0;
-}
-
 @media (max-width: 640px) {
   .global-navbar {
     min-height: 60px;
     padding: 0 18px;
+    margin-bottom: 18px;
   }
 
   .global-navbar__brand {
