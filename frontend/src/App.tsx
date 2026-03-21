@@ -124,7 +124,7 @@ export default function App() {
         />
 
         <Route
-          path="/dashboard"
+          path="/devices/:deviceId/dashboard"
           element={
             <OverviewPage
               theme={theme}
@@ -133,9 +133,9 @@ export default function App() {
             />
           }
         />
-
+        
         <Route
-          path="/detail/:metricId"
+          path="/devices/:deviceId/detail/:metricId"
           element={
             <DetailPage
               theme={theme}

@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
+import { devices } from "../data/devices";
 
 type Props = {
   theme: ThemeMode;
@@ -13,26 +13,12 @@ type Props = {
   onToggleTheme: (mode: ThemeMode) => void;
 };
 
-type Device = {
-  id: string;
-  name: string;
-  location: string;
-  status: "Online" | "Offline";
-};
-
 export default function DeviceSelectionPage({
   theme,
-  user,
   isAuthenticated,
   onToggleTheme,
 }: Props) {
   const navigate = useNavigate();
-
-  const [devices] = useState<Device[]>([
-    { id: "device-a", name: "Greenhouse A", location: "North Field", status: "Online" },
-    { id: "device-b", name: "Greenhouse B", location: "South Field", status: "Online" },
-    { id: "device-c", name: "Soil Station C", location: "Open Area", status: "Offline" },
-  ]);
 
   return (
     <main className="device-selection-page">
@@ -58,7 +44,7 @@ export default function DeviceSelectionPage({
           <button
             key={device.id}
             className="device-card"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(`/devices/${device.id}/dashboard`)}
           >
             <div className="device-card__top">
               <span className="device-card__badge">{device.status}</span>
@@ -71,7 +57,10 @@ export default function DeviceSelectionPage({
           </button>
         ))}
 
-        <button className="device-card device-card--add" onClick={() => navigate("/profile")}>
+        <button
+          className="device-card device-card--add"
+          onClick={() => navigate("/profile")}
+        >
           <h3>Add new device</h3>
           <p>Go to profile settings and register a new device.</p>
           <span className="device-card__cta">Open profile</span>

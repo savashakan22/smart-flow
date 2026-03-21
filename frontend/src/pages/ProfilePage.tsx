@@ -2,17 +2,11 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
+import { devices as initialDevices } from "../data/devices";
 
 type User = {
   fullName: string;
   email: string;
-};
-
-type Device = {
-  id: number;
-  name: string;
-  serial: string;
-  status: "Active" | "Passive";
 };
 
 type Props = {
@@ -37,6 +31,7 @@ export default function ProfilePage({
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("personal");
+  const [devices, setDevices] = useState(initialDevices);
 
   const [fullName, setFullName] = useState(user.fullName);
   const [email, setEmail] = useState(user.email);
@@ -45,11 +40,6 @@ export default function ProfilePage({
 
   const [deviceName, setDeviceName] = useState("");
   const [deviceSerial, setDeviceSerial] = useState("");
-
-  const [devices, setDevices] = useState<Device[]>([
-    { id: 1, name: "Device A", serial: "SM-1001", status: "Active" },
-    { id: 2, name: "Device B", serial: "TM-2088", status: "Passive" },
-  ]);
 
   const initials = useMemo(() => {
     return user.fullName
@@ -85,10 +75,11 @@ export default function ProfilePage({
     setDevices((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id: `device-${Date.now()}`,
         name: deviceName.trim(),
+        location: "Custom Device",
         serial: deviceSerial.trim(),
-        status: "Active",
+        status: "Online",
       },
     ]);
 
@@ -96,7 +87,7 @@ export default function ProfilePage({
     setDeviceSerial("");
   }
 
-  function handleRemoveDevice(id: number) {
+  function handleRemoveDevice(id: string) {
     setDevices((prev) => prev.filter((device) => device.id !== id));
   }
 
@@ -106,180 +97,187 @@ export default function ProfilePage({
   }
 
   return (
-  <>
-    <Navbar
-      theme={theme}
-      onToggleTheme={onToggleTheme}
-      isAuthenticated={isAuthenticated}
-    />
+    <>
+      <Navbar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
 
-    <main className="profile-page profile-page--settings">
-      <section className="profile-hero-card">
-        <div className="profile-avatar">{initials}</div>
-        <div>
-          <h2>{fullName}</h2>
-          <p>{email}</p>
-        </div>
-      </section>
+      <main className="profile-page profile-page--settings">
+        <section className="profile-hero-card">
+          <div className="profile-avatar">{initials}</div>
+          <div>
+            <h2>{fullName}</h2>
+            <p>{email}</p>
+          </div>
+        </section>
 
-      <div className="profile-settings-layout">
-        <aside className="profile-settings-sidebar">
-          <button
-            type="button"
-            className={`profile-settings-tab ${activeTab === "personal" ? "is-active" : ""}`}
-            onClick={() => setActiveTab("personal")}
-          >
-            Personal Info
-          </button>
-
-          <button
-            type="button"
-            className={`profile-settings-tab ${activeTab === "security" ? "is-active" : ""}`}
-            onClick={() => setActiveTab("security")}
-          >
-            Security
-          </button>
-
-          <button
-            type="button"
-            className={`profile-settings-tab ${activeTab === "devices" ? "is-active" : ""}`}
-            onClick={() => setActiveTab("devices")}
-          >
-            Device Management
-          </button>
-
-          <div className="profile-settings-sidebar__footer">
+        <div className="profile-settings-layout">
+          <aside className="profile-settings-sidebar">
             <button
               type="button"
-              className="profile-btn profile-btn--danger profile-btn--sidebar"
-              onClick={handleLogout}
+              className={`profile-settings-tab ${activeTab === "personal" ? "is-active" : ""}`}
+              onClick={() => setActiveTab("personal")}
             >
-              Log out
+              Personal Info
             </button>
-          </div>
-        </aside>
 
-        <div className="profile-settings-content">
-          {activeTab === "personal" && (
-            <section className="profile-card">
-              <p className="profile-card__eyebrow">Personal Information</p>
-              <h3>Profile Information</h3>
+            <button
+              type="button"
+              className={`profile-settings-tab ${activeTab === "security" ? "is-active" : ""}`}
+              onClick={() => setActiveTab("security")}
+            >
+              Security
+            </button>
 
-              <div className="profile-form">
-                <label className="profile-field">
-                  <span>Name Surname</span>
-                  <input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    type="text"
-                  />
-                </label>
+            <button
+              type="button"
+              className={`profile-settings-tab ${activeTab === "devices" ? "is-active" : ""}`}
+              onClick={() => setActiveTab("devices")}
+            >
+              Device Management
+            </button>
 
-                <label className="profile-field">
-                  <span>E-mail</span>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    type="email"
-                  />
-                </label>
+            <div className="profile-settings-sidebar__footer">
+              <button
+                type="button"
+                className="profile-btn profile-btn--danger profile-btn--sidebar"
+                onClick={handleLogout}
+              >
+                Log out
+              </button>
+            </div>
+          </aside>
 
-                <button onClick={handleSaveProfile} className="profile-btn profile-btn--primary">
-                  Save profile
-                </button>
-              </div>
-            </section>
-          )}
+          <div className="profile-settings-content">
+            {activeTab === "personal" && (
+              <section className="profile-card">
+                <p className="profile-card__eyebrow">Personal Information</p>
+                <h3>Profile Information</h3>
 
-          {activeTab === "security" && (
-            <section className="profile-card">
-              <p className="profile-card__eyebrow">Security</p>
-              <h3>Password Settings</h3>
+                <div className="profile-form">
+                  <label className="profile-field">
+                    <span>Name Surname</span>
+                    <input
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      type="text"
+                    />
+                  </label>
 
-              <div className="profile-form">
-                <label className="profile-field">
-                  <span>Current Password</span>
-                  <input
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    type="password"
-                  />
-                </label>
+                  <label className="profile-field">
+                    <span>E-mail</span>
+                    <input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      type="email"
+                    />
+                  </label>
 
-                <label className="profile-field">
-                  <span>New Password</span>
-                  <input
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    type="password"
-                  />
-                </label>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="profile-btn profile-btn--primary"
+                  >
+                    Save profile
+                  </button>
+                </div>
+              </section>
+            )}
 
-                <button
-                  onClick={handlePasswordChange}
-                  className="profile-btn profile-btn--primary"
-                >
-                  Update password
-                </button>
-              </div>
-            </section>
-          )}
+            {activeTab === "security" && (
+              <section className="profile-card">
+                <p className="profile-card__eyebrow">Security</p>
+                <h3>Password Settings</h3>
 
-          {activeTab === "devices" && (
-            <section className="profile-card">
-              <p className="profile-card__eyebrow">Device Management</p>
-              <h3>Registered Devices</h3>
+                <div className="profile-form">
+                  <label className="profile-field">
+                    <span>Current Password</span>
+                    <input
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      type="password"
+                    />
+                  </label>
 
-              <div className="profile-device-add">
-                <label className="profile-field">
-                  <span>Device Name</span>
-                  <input
-                    value={deviceName}
-                    onChange={(e) => setDeviceName(e.target.value)}
-                    type="text"
-                    placeholder="Greenhouse Sensor"
-                  />
-                </label>
+                  <label className="profile-field">
+                    <span>New Password</span>
+                    <input
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      type="password"
+                    />
+                  </label>
 
-                <label className="profile-field">
-                  <span>Serial Number</span>
-                  <input
-                    value={deviceSerial}
-                    onChange={(e) => setDeviceSerial(e.target.value)}
-                    type="text"
-                    placeholder="SR-3099"
-                  />
-                </label>
+                  <button
+                    onClick={handlePasswordChange}
+                    className="profile-btn profile-btn--primary"
+                  >
+                    Update password
+                  </button>
+                </div>
+              </section>
+            )}
 
-                <button onClick={handleAddDevice} className="profile-btn profile-btn--primary">
-                  Add device
-                </button>
-              </div>
+            {activeTab === "devices" && (
+              <section className="profile-card">
+                <p className="profile-card__eyebrow">Device Management</p>
+                <h3>Registered Devices</h3>
 
-              <div className="device-list">
-                {devices.map((device) => (
-                  <div key={device.id} className="device-item">
-                    <div>
-                      <h4>{device.name}</h4>
-                      <p>
-                        {device.serial} • {device.status}
-                      </p>
+                <div className="profile-device-add">
+                  <label className="profile-field">
+                    <span>Device Name</span>
+                    <input
+                      value={deviceName}
+                      onChange={(e) => setDeviceName(e.target.value)}
+                      type="text"
+                      placeholder="Greenhouse Sensor"
+                    />
+                  </label>
+
+                  <label className="profile-field">
+                    <span>Serial Number</span>
+                    <input
+                      value={deviceSerial}
+                      onChange={(e) => setDeviceSerial(e.target.value)}
+                      type="text"
+                      placeholder="SR-3099"
+                    />
+                  </label>
+
+                  <button
+                    onClick={handleAddDevice}
+                    className="profile-btn profile-btn--primary"
+                  >
+                    Add device
+                  </button>
+                </div>
+
+                <div className="device-list">
+                  {devices.map((device) => (
+                    <div key={device.id} className="device-item">
+                      <div>
+                        <h4>{device.name}</h4>
+                        <p>
+                          {device.serial} • {device.status}
+                          {device.location ? ` • ${device.location}` : ""}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => handleRemoveDevice(device.id)}
+                        className="profile-btn profile-btn--ghost"
+                      >
+                        Remove
+                      </button>
                     </div>
-
-                    <button
-                      onClick={() => handleRemoveDevice(device.id)}
-                      className="profile-btn profile-btn--ghost"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
         </div>
-      </div>
-    </main>
-  </>
+      </main>
+    </>
   );
 }

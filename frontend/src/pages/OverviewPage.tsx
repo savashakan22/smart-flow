@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import MetricCard from "../components/MetricCard";
@@ -17,6 +17,12 @@ export default function OverviewPage({
   isAuthenticated,
 }: Props) {
   const navigate = useNavigate();
+  const { deviceId } = useParams();
+
+  function handleMetricClick(metricId: string) {
+    if (!deviceId) return;
+    navigate(`/devices/${deviceId}/detail/${metricId}`);
+  }
 
   return (
     <div className="dashboard-layout">
@@ -44,7 +50,7 @@ export default function OverviewPage({
                   key={metric.id}
                   metric={metric}
                   active={false}
-                  onClick={() => navigate(`/detail/${metric.id}`)}
+                  onClick={handleMetricClick}
                 />
               ))}
             </div>

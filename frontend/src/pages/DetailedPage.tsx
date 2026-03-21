@@ -18,7 +18,7 @@ export default function DetailPage({
   isAuthenticated,
 }: Props) {
   const navigate = useNavigate();
-  const { metricId } = useParams();
+  const { deviceId, metricId } = useParams();
 
   const metric = useMemo(
     () => metrics.find((item) => item.id === metricId) ?? metrics[0],
@@ -41,7 +41,7 @@ export default function DetailPage({
             <button
               type="button"
               className="back-overview-btn"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(`/devices/${deviceId}/dashboard`)}
             >
               Back to overview
             </button>

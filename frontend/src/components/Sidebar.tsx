@@ -12,7 +12,12 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const activeMetricId = useMemo(() => {
-    const match = location.pathname.match(/^\/detail\/(.+)$/);
+    const match = location.pathname.match(/^\/devices\/[^/]+\/detail\/([^/]+)$/);
+    return match?.[1] ?? null;
+  }, [location.pathname]);
+
+  const activeDeviceId = useMemo(() => {
+    const match = location.pathname.match(/^\/devices\/([^/]+)\//);
     return match?.[1] ?? null;
   }, [location.pathname]);
 
@@ -77,7 +82,6 @@ export default function Sidebar() {
 
         {!collapsed && (
           <nav className="sidebar__nav">
-
             {metrics.map((metric) => (
               <button
                 key={metric.id}
@@ -85,10 +89,16 @@ export default function Sidebar() {
                 className={`sidebar__item ${
                   activeMetricId === metric.id ? "active" : ""
                 }`}
-                onClick={() => handleNavigate(`/detail/${metric.id}`)}
+                onClick={() =>
+                  handleNavigate(
+                    activeDeviceId
+                      ? `/devices/${activeDeviceId}/detail/${metric.id}`
+                      : `/devices`
+                  )
+                }
               >
                 <span className="sidebar__icon"></span>
-                <span>{metric.shortLabel}</span>
+                <span>{metric.title}</span>
               </button>
             ))}
           </nav>
@@ -122,7 +132,13 @@ export default function Sidebar() {
                 className={`mobile-drawer__item ${
                   activeMetricId === metric.id ? "active" : ""
                 }`}
-                onClick={() => handleNavigate(`/detail/${metric.id}`)}
+                onClick={() =>
+                  handleNavigate(
+                    activeDeviceId
+                      ? `/devices/${activeDeviceId}/detail/${metric.id}`
+                      : `/devices`
+                  )
+                }
               >
                 {metric.shortLabel}
               </button>
