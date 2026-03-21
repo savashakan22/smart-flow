@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
+import Navbar from "../components/Navbar";
 
 type Props = {
   theme: ThemeMode;
@@ -8,6 +9,8 @@ type Props = {
     fullName: string;
     email: string;
   };
+  isAuthenticated: boolean;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
 type Device = {
@@ -17,7 +20,12 @@ type Device = {
   status: "Online" | "Offline";
 };
 
-export default function DeviceSelectionPage({ user }: Props) {
+export default function DeviceSelectionPage({
+  theme,
+  user,
+  isAuthenticated,
+  onToggleTheme,
+}: Props) {
   const navigate = useNavigate();
 
   const [devices] = useState<Device[]>([
@@ -37,6 +45,12 @@ export default function DeviceSelectionPage({ user }: Props) {
 
   return (
     <main className="device-selection-page">
+      <Navbar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
+
       <header className="device-selection-header">
         <div>
           <p className="device-selection-header__eyebrow">Device Access</p>

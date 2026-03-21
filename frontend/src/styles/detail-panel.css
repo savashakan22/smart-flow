@@ -1,6 +1,6 @@
 .detail-panel {
   width: 100%;
-  padding: 24px;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   background: var(--surface);

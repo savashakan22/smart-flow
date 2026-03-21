@@ -64,7 +64,7 @@
     padding: 0 0 22px;
   }
 
-  detail-page-only.content-shell--detail {
+  .detail-page-only.content-shell--detail {
     min-height: auto;
     justify-content: flex-start;
   }

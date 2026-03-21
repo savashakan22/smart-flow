@@ -87,7 +87,7 @@
 .trend--down {
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 14%, var(--surface));
-  border-color: color-mix(in srgb, var(--wawrning) 24%, transparent);
+  border-color: color-mix(in srgb, var(--warning) 24%, transparent);
 }
 
 .trend--stable {

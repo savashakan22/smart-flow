@@ -15,7 +15,6 @@ type Props = {
 export default function LandingPage({
   theme,
   isAuthenticated,
-  user,
   onToggleTheme,
 }: Props) {
   return (
@@ -43,7 +42,7 @@ export default function LandingPage({
                   Go to Dashboard
                 </Link>
                 <Link to="/profile" className="landing-btn landing-btn--secondary">
-                  {user.fullName.split(" ")[0]}'s Profile
+                  Profile
                 </Link>
               </>
             ) : (

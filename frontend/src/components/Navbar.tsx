@@ -20,7 +20,7 @@ export default function Navbar({
 
   return (
     <header className="global-navbar">
-      <Link to="/dashboard" className="global-navbar__brand">
+      <Link to="/" className="global-navbar__brand">
         SmartFlow Dashboard
       </Link>
 

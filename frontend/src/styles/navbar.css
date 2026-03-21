@@ -1,4 +1,7 @@
 .global-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   width: 100%;
   min-height: 68px;
   display: flex;
@@ -6,8 +9,9 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 28px;
-  margin-bottom: 0;
-  top: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  box-sizing: border-box;
 }
 
 .global-navbar__brand {
@@ -34,7 +38,6 @@
   padding: 0 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.2s ease;
 }
 
 .global-navbar__icon-btn {
@@ -45,17 +48,17 @@
   font-size: 1.05rem;
 }
 
-.auth-page .global-navbar,
 .landing-page .global-navbar,
+.auth-page .global-navbar,
 .profile-page .global-navbar,
 .device-selection-page .global-navbar {
   max-width: 1240px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }
 
-.dashboard-content .global-navbar {
+.dashboard-content > .global-navbar {
   width: min(90%, 1440px);
+  margin: 0 auto;
   padding-left: 0;
   padding-right: 0;
 }

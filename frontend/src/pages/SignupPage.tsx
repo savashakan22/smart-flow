@@ -36,7 +36,7 @@ export default function SignupPage({
       email,
     });
 
-    navigate("/dashboard");
+    navigate("/devices");
   }
 
   return (

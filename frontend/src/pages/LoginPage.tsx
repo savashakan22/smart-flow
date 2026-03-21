@@ -29,7 +29,7 @@ export default function LoginPage({
       email,
     });
 
-    navigate("/dashboard");
+    navigate("/devices");
   }
 
   return (

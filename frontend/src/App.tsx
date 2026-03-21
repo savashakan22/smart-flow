@@ -9,6 +9,7 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
+import DeviceSelectionPage from "./pages/DeviceSelectionPage";
 
 type UserProfile = {
   fullName: string;
@@ -81,7 +82,7 @@ export default function App() {
         path="/login"
         element={
           isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
+            <Navigate to="/devices" replace />
           ) : (
             <LoginPage
               theme={theme}
@@ -97,7 +98,7 @@ export default function App() {
         path="/signup"
         element={
           isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
+            <Navigate to="/devices" replace />
           ) : (
             <SignupPage
               theme={theme}
@@ -111,7 +112,24 @@ export default function App() {
 
       <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
         <Route
+          path="/devices"
+          element={
+            <DeviceSelectionPage
+              theme={theme}
+              user={user}
+              isAuthenticated={isAuthenticated}
+              onToggleTheme={setTheme}
+            />
+          }
+        />
+
+        <Route
           path="/dashboard"
+          element={<Navigate to="/devices" replace />}
+        />
+
+        <Route
+          path="/dashboard/:deviceId"
           element={
             <OverviewPage
               theme={theme}
@@ -122,7 +140,7 @@ export default function App() {
         />
 
         <Route
-          path="/detail/:metricId"
+          path="/detail/:deviceId/:metricId"
           element={
             <DetailPage
               theme={theme}
