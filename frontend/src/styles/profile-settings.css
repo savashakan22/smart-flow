@@ -1,0 +1,66 @@
+.profile-page--settings {
+  padding-top: 0;
+}
+
+.profile-settings-layout {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.profile-settings-sidebar {
+  border: 1px solid var(--auth-border);
+  background: var(--auth-card-bg);
+  box-shadow: var(--auth-shadow);
+  border-radius: 24px;
+  padding: 16px;
+  height: fit-content;
+  display: grid;
+  gap: 10px;
+}
+
+.profile-settings-tab {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-main);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.profile-settings-tab.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary-accent);
+}
+
+.profile-settings-content {
+  min-width: 0;
+}
+
+.profile-inline-actions {
+  margin-top: 18px;
+}
+
+@media (max-width: 960px) {
+  .device-grid,
+  .profile-settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .global-navbar,
+  .device-selection-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .global-navbar__actions {
+    justify-content: flex-start;
+  }
+}

@@ -72,6 +72,7 @@ export default function App() {
             theme={theme}
             isAuthenticated={isAuthenticated}
             user={user}
+            onToggleTheme={setTheme}
           />
         }
       />
@@ -82,7 +83,12 @@ export default function App() {
           isAuthenticated ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <LoginPage theme={theme} onLogin={authActions.login} />
+            <LoginPage
+              theme={theme}
+              onLogin={authActions.login}
+              isAuthenticated={isAuthenticated}
+              onToggleTheme={setTheme}
+            />
           )
         }
       />
@@ -93,7 +99,12 @@ export default function App() {
           isAuthenticated ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <SignupPage theme={theme} onSignup={authActions.signup} />
+            <SignupPage
+              theme={theme}
+              onSignup={authActions.signup}
+              isAuthenticated={isAuthenticated}
+              onToggleTheme={setTheme}
+            />
           )
         }
       />
@@ -104,7 +115,8 @@ export default function App() {
           element={
             <OverviewPage
               theme={theme}
-              onToggleTheme={(mode) => setTheme(mode)}
+              onToggleTheme={setTheme}
+              isAuthenticated={isAuthenticated}
             />
           }
         />
@@ -114,7 +126,8 @@ export default function App() {
           element={
             <DetailPage
               theme={theme}
-              onToggleTheme={(mode) => setTheme(mode)}
+              onToggleTheme={setTheme}
+              isAuthenticated={isAuthenticated}
             />
           }
         />
@@ -127,6 +140,8 @@ export default function App() {
               user={user}
               onLogout={authActions.logout}
               onSaveProfile={authActions.updateUser}
+              isAuthenticated={isAuthenticated}
+              onToggleTheme={setTheme}
             />
           }
         />

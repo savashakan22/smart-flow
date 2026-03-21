@@ -1,0 +1,72 @@
+.global-navbar {
+  width: 100%;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 28px;
+  margin-bottom: 0;
+  top: 0;
+}
+
+.global-navbar__brand {
+  text-decoration: none;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.global-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.global-navbar__icon-btn,
+.global-navbar__profile-btn {
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.global-navbar__icon-btn {
+  width: 42px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+}
+
+.auth-page .global-navbar,
+.landing-page .global-navbar,
+.profile-page .global-navbar,
+.device-selection-page .global-navbar {
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-content .global-navbar {
+  width: min(90%, 1440px);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: 640px) {
+  .global-navbar {
+    min-height: 60px;
+    padding: 0 18px;
+  }
+
+  .global-navbar__brand {
+    font-size: 1rem;
+  }
+}

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
+import Navbar from "../components/Navbar";
 
 type Props = {
   theme: ThemeMode;
@@ -8,18 +9,30 @@ type Props = {
     fullName: string;
     email: string;
   };
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
-export default function LandingPage({ isAuthenticated, user }: Props) {
+export default function LandingPage({
+  theme,
+  isAuthenticated,
+  user,
+  onToggleTheme,
+}: Props) {
   return (
     <main className="landing-page">
+      <Navbar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
+
       <section className="landing-hero">
         <div className="landing-hero__content">
           <span className="landing-badge">SmartFlow Dashboard</span>
           <h1>Monitor agricultural data, manage your equipment</h1>
           <p>
-            Monitor sensor metrics from a single panel, 
-            review them in detail screens, manage your account 
+            Monitor sensor metrics from a single panel,
+            review them in detail screens, manage your account
             and consolidate device adding processes into a single user flow
           </p>
 
@@ -30,7 +43,7 @@ export default function LandingPage({ isAuthenticated, user }: Props) {
                   Go to Dashboard
                 </Link>
                 <Link to="/profile" className="landing-btn landing-btn--secondary">
-                  Profile
+                  {user.fullName.split(" ")[0]}'s Profile
                 </Link>
               </>
             ) : (

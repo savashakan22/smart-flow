@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
+import Navbar from "../components/Navbar";
 
 type Props = {
   theme: ThemeMode;
   onSignup: (profile: { fullName: string; email: string }) => void;
+  isAuthenticated: boolean;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
-export default function SignupPage({ onSignup }: Props) {
+export default function SignupPage({
+  theme,
+  onSignup,
+  isAuthenticated,
+  onToggleTheme,
+}: Props) {
   const navigate = useNavigate();
 
   const [fullName, setFullName] = useState("");
@@ -19,12 +27,12 @@ export default function SignupPage({ onSignup }: Props) {
     e.preventDefault();
 
     if (password !== passwordAgain) {
-      alert("Şifreler eşleşmiyor.");
+      alert("Passwords do not match.");
       return;
     }
 
     onSignup({
-      fullName: fullName.trim() || "Yeni Kullanıcı",
+      fullName: fullName.trim() || "New User",
       email,
     });
 
@@ -33,12 +41,16 @@ export default function SignupPage({ onSignup }: Props) {
 
   return (
     <main className="auth-page">
+      <Navbar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
+
       <div className="auth-card">
         <p className="auth-card__eyebrow">New Account</p>
         <h1>Sign Up</h1>
-        <p className="auth-card__description">
-          Sign Up
-        </p>
+        <p className="auth-card__description">Sign Up</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-field">

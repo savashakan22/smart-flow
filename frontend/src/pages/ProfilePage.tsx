@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
+import Navbar from "../components/Navbar";
 
 type User = {
   fullName: string;
@@ -19,12 +20,17 @@ type Props = {
   user: User;
   onLogout: () => void;
   onSaveProfile: (profile: User) => void;
+  isAuthenticated: boolean;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
 export default function ProfilePage({
+  theme,
   user,
   onLogout,
   onSaveProfile,
+  isAuthenticated,
+  onToggleTheme,
 }: Props) {
   const navigate = useNavigate();
 
@@ -97,21 +103,11 @@ export default function ProfilePage({
 
   return (
     <main className="profile-page">
-      <div className="profile-topbar">
-        <div>
-          <p className="profile-topbar__eyebrow">Account Management</p>
-          <h1>Profile</h1>
-        </div>
-
-        <div className="profile-topbar__actions">
-          <Link to="/dashboard" className="profile-btn profile-btn--ghost">
-            Dashboard
-          </Link>
-          <button onClick={handleLogout} className="profile-btn profile-btn--danger">
-            Log out
-          </button>
-        </div>
-      </div>
+      <Navbar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
 
       <section className="profile-hero-card">
         <div className="profile-avatar">{initials}</div>
@@ -146,14 +142,14 @@ export default function ProfilePage({
             </label>
 
             <button onClick={handleSaveProfile} className="profile-btn profile-btn--primary">
-              Save
+              Save profile
             </button>
           </div>
         </section>
 
         <section className="profile-card">
           <p className="profile-card__eyebrow">Security</p>
-          <h3>Change password</h3>
+          <h3>Password Settings</h3>
 
           <div className="profile-form">
             <label className="profile-field">
@@ -178,23 +174,23 @@ export default function ProfilePage({
               onClick={handlePasswordChange}
               className="profile-btn profile-btn--primary"
             >
-              Update Password
+              Update password
             </button>
           </div>
         </section>
 
         <section className="profile-card profile-card--full">
-          <p className="profile-card__eyebrow">Device management</p>
-          <h3>Add device</h3>
+          <p className="profile-card__eyebrow">Device Management</p>
+          <h3>Registered Devices</h3>
 
           <div className="profile-device-add">
             <label className="profile-field">
-              <span>Device name</span>
+              <span>Device Name</span>
               <input
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
                 type="text"
-                placeholder="Device C"
+                placeholder="Greenhouse Sensor"
               />
             </label>
 
@@ -231,6 +227,12 @@ export default function ProfilePage({
                 </button>
               </div>
             ))}
+          </div>
+
+          <div className="profile-topbar__actions" style={{ marginTop: 16 }}>
+            <button onClick={handleLogout} className="profile-btn profile-btn--danger">
+              Log out
+            </button>
           </div>
         </section>
       </div>

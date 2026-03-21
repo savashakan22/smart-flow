@@ -1,19 +1,48 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import type { ThemeMode } from "../types/dashboard";
 
-export default function Navbar() {
+type Props = {
+  theme: ThemeMode;
+  onToggleTheme: (mode: ThemeMode) => void;
+  isAuthenticated: boolean;
+};
+
+export default function Navbar({
+  theme,
+  onToggleTheme,
+  isAuthenticated,
+}: Props) {
   const navigate = useNavigate();
 
-  const handleNavigate = (path: string) => {
-    navigate(path);
-  };
+  function handleThemeToggle() {
+    onToggleTheme(theme === "dark" ? "light" : "dark");
+  }
 
   return (
-    <header className="navbar">
-      <div className="navbar__inner">
-        <button className="navbar__title" onClick={() => handleNavigate("/")}>
-          SmartFlow Dashboard
+    <header className="global-navbar">
+      <Link to="/dashboard" className="global-navbar__brand">
+        SmartFlow Dashboard
+      </Link>
+
+      <div className="global-navbar__actions">
+        <button
+          type="button"
+          className="global-navbar__icon-btn"
+          onClick={handleThemeToggle}
+          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          title={theme === "dark" ? "Light mode" : "Dark mode"}
+        >
+          {theme === "dark" ? "☀" : "☾"}
+        </button>
+
+        <button
+          type="button"
+          className="global-navbar__profile-btn"
+          onClick={() => navigate(isAuthenticated ? "/profile" : "/login")}
+        >
+          {isAuthenticated ? "Profile" : "Log in"}
         </button>
       </div>
     </header>
   );
-}
+} 

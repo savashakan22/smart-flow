@@ -3,16 +3,20 @@ import { useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DetailPanel from "../components/DetailedPanel";
-import SettingsFab from "../components/SettingsFab";
 import { metrics } from "../data/metrics";
 import type { ThemeMode } from "../types/dashboard";
 
 type Props = {
   theme: ThemeMode;
   onToggleTheme: (mode: ThemeMode) => void;
+  isAuthenticated: boolean;
 };
 
-export default function DetailPage({ theme, onToggleTheme }: Props) {
+export default function DetailPage({
+  theme,
+  onToggleTheme,
+  isAuthenticated,
+}: Props) {
   const { metricId } = useParams();
 
   const metric = useMemo(
@@ -25,14 +29,15 @@ export default function DetailPage({ theme, onToggleTheme }: Props) {
       <Sidebar />
 
       <div className="dashboard-content">
-        <Navbar />
+        <Navbar
+          theme={theme}
+          onToggleTheme={onToggleTheme}
+          isAuthenticated={isAuthenticated}
+        />
 
         <main className="detail-page-only content-shell content-shell--detail">
-
           <DetailPanel metric={metric} />
         </main>
-
-        <SettingsFab theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </div>
   );

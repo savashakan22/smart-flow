@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
+import Navbar from "../components/Navbar";
 
 type Props = {
   theme: ThemeMode;
   onLogin: (profile: { fullName: string; email: string }) => void;
+  isAuthenticated: boolean;
+  onToggleTheme: (mode: ThemeMode) => void;
 };
 
-export default function LoginPage({ onLogin }: Props) {
+export default function LoginPage({
+  theme,
+  onLogin,
+  isAuthenticated,
+  onToggleTheme,
+}: Props) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("ahmet@mail.com");
   const [password, setPassword] = useState("");
@@ -26,12 +34,16 @@ export default function LoginPage({ onLogin }: Props) {
 
   return (
     <main className="auth-page">
+      <Navbar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
+
       <div className="auth-card">
         <p className="auth-card__eyebrow">Welcome</p>
         <h1>Login</h1>
-        <p className="auth-card__description">
-          Login
-        </p>
+        <p className="auth-card__description">Login</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-field">

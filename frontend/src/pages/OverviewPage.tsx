@@ -2,16 +2,20 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import MetricCard from "../components/MetricCard";
-import SettingsFab from "../components/SettingsFab";
 import { metrics } from "../data/metrics";
 import type { ThemeMode } from "../types/dashboard";
 
 type Props = {
   theme: ThemeMode;
   onToggleTheme: (mode: ThemeMode) => void;
+  isAuthenticated: boolean;
 };
 
-export default function OverviewPage({ theme, onToggleTheme }: Props) {
+export default function OverviewPage({
+  theme,
+  onToggleTheme,
+  isAuthenticated,
+}: Props) {
   const navigate = useNavigate();
 
   return (
@@ -19,7 +23,11 @@ export default function OverviewPage({ theme, onToggleTheme }: Props) {
       <Sidebar />
 
       <div className="dashboard-content">
-        <Navbar />
+        <Navbar
+          theme={theme}
+          onToggleTheme={onToggleTheme}
+          isAuthenticated={isAuthenticated}
+        />
 
         <main className="overview-page-only content-shell content-shell--overview">
           <section className="overview-section">
@@ -42,8 +50,6 @@ export default function OverviewPage({ theme, onToggleTheme }: Props) {
             </div>
           </section>
         </main>
-
-        <SettingsFab theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </div>
   );
