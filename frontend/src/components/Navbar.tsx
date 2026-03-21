@@ -39,8 +39,10 @@ export default function Navbar({
           type="button"
           className="global-navbar__profile-btn"
           onClick={() => navigate(isAuthenticated ? "/profile" : "/login")}
+          aria-label={isAuthenticated ? "Open profile" : "Go to login"}
+          title={isAuthenticated ? "Profile" : "Log in"}
         >
-          {isAuthenticated ? "Profile" : "Log in"}
+          {isAuthenticated ? "👤" : "➜]"}
         </button>
       </div>
     </header>

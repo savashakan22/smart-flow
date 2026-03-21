@@ -106,13 +106,14 @@ export default function ProfilePage({
   }
 
   return (
-    <main className="profile-page profile-page--settings">
-      <Navbar
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        isAuthenticated={isAuthenticated}
-      />
+  <>
+    <Navbar
+      theme={theme}
+      onToggleTheme={onToggleTheme}
+      isAuthenticated={isAuthenticated}
+    />
 
+    <main className="profile-page profile-page--settings">
       <section className="profile-hero-card">
         <div className="profile-avatar">{initials}</div>
         <div>
@@ -146,6 +147,16 @@ export default function ProfilePage({
           >
             Device Management
           </button>
+
+          <div className="profile-settings-sidebar__footer">
+            <button
+              type="button"
+              className="profile-btn profile-btn--danger profile-btn--sidebar"
+              onClick={handleLogout}
+            >
+              Log out
+            </button>
+          </div>
         </aside>
 
         <div className="profile-settings-content">
@@ -264,16 +275,11 @@ export default function ProfilePage({
                   </div>
                 ))}
               </div>
-
-              <div className="profile-inline-actions">
-                <button onClick={handleLogout} className="profile-btn profile-btn--danger">
-                  Log out
-                </button>
-              </div>
             </section>
           )}
         </div>
       </div>
     </main>
+  </>
   );
 }

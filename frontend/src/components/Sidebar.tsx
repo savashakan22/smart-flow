@@ -6,7 +6,9 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem("sidebar_collapsed") === "true";
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const activeMetricId = useMemo(() => {
@@ -25,6 +27,10 @@ export default function Sidebar() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar_collapsed", String(collapsed));
+  }, [collapsed]);
 
   return (
     <>

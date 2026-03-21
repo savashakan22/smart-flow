@@ -36,7 +36,7 @@ export const metrics: Metric[] = [
   {
     id: "water-temp",
     title: "Water Temperature",
-    shortLabel: "Water Temperature",
+    shortLabel: "Temperature",
     unit: "°C",
     value: 22.4,
     min: 0,
@@ -47,12 +47,12 @@ export const metrics: Metric[] = [
     description:
       "Water Temperature",
     trend: "stable",
-    lastUpdated: "3 dk önce",
+    lastUpdated: "3 minutes ago",
   },
   {
     id: "air-temp",
     title: "Air Temperature",
-    shortLabel: "Air Temperature",
+    shortLabel: "Temperature",
     unit: "°C",
     value: 24.8,
     min: 0,
@@ -63,7 +63,7 @@ export const metrics: Metric[] = [
     description:
       "Air Temperature",
     trend: "down",
-    lastUpdated: "1 minutes ago",
+    lastUpdated: "1 minute ago",
   },
   {
     id: "humidity",
@@ -75,7 +75,7 @@ export const metrics: Metric[] = [
     max: 100,
     idealMin: 55,
     idealMax: 70,
-    statusText: "Uygun",
+    statusText: "Normal",
     description:
       "Humidity",
     trend: "stable",
@@ -91,7 +91,7 @@ export const metrics: Metric[] = [
     max: 100,
     idealMin: 50,
     idealMax: 100,
-    statusText: "Enough",
+    statusText: "Normal",
     description:
       "Water level",
     trend: "down",

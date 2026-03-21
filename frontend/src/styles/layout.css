@@ -27,7 +27,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: 0 auto;
+  margin: 0 auto 0;
 }
 
 .overview-page-only,
@@ -47,6 +47,23 @@
   align-items: center;
   justify-content: flex-start;
   margin-bottom: 18px;
+}
+
+.back-overview-btn {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.back-overview-btn:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
 .mobile-topbar {
@@ -108,5 +125,12 @@
     margin: 4px 0 0;
     font-size: 0.82rem;
     color: var(--text-soft);
+  }
+}
+
+@media (max-width: 640px) {
+  .back-overview-btn {
+    width: 100%;
+    justify-content: center;
   }
 }

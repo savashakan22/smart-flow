@@ -9,7 +9,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 28px;
-  margin: 0 0 24px;
+  margin: 0 0 3vh 0;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   box-sizing: border-box;
@@ -31,29 +31,33 @@
 
 .global-navbar__icon-btn,
 .global-navbar__profile-btn {
+  width: 42px;
+  height: 42px;
   min-height: 42px;
-  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  padding: 0 14px;
+  padding: 0;
   font-weight: 700;
   cursor: pointer;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
 }
 
 .global-navbar__icon-btn {
-  width: 42px;
-  padding: 0;
-  display: grid;
-  place-items: center;
   font-size: 1.05rem;
+}
+
+.global-navbar__profile-btn {
+  font-size: 1rem;
 }
 
 @media (max-width: 640px) {
   .global-navbar {
     min-height: 60px;
     padding: 0 18px;
-    margin-bottom: 18px;
+    margin-bottom: 0;
   }
 
   .global-navbar__brand {

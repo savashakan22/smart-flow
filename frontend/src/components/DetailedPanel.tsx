@@ -53,7 +53,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
 
           <article className="detail-box">
             <span>Status</span>
-            <strong>{metric.title}</strong>
+            <strong>{metric.statusText}</strong>
           </article>
 
           <article className="detail-box">

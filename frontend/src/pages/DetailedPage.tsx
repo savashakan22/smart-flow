@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DetailPanel from "../components/DetailedPanel";
@@ -17,6 +17,7 @@ export default function DetailPage({
   onToggleTheme,
   isAuthenticated,
 }: Props) {
+  const navigate = useNavigate();
   const { metricId } = useParams();
 
   const metric = useMemo(
@@ -36,6 +37,16 @@ export default function DetailPage({
         />
 
         <main className="detail-page-only content-shell content-shell--detail">
+          <div className="detail-page-topbar">
+            <button
+              type="button"
+              className="back-overview-btn"
+              onClick={() => navigate("/dashboard")}
+            >
+              Back to overview
+            </button>
+          </div>
+
           <DetailPanel metric={metric} />
         </main>
       </div>
