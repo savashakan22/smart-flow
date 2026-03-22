@@ -59,7 +59,7 @@ export default function Sidebar({
           <button
             type="button"
             className="hamburger-button"
-            aria-label="Menüyü aç"
+            aria-label="Open Menu"
             onClick={() => setMobileOpen(true)}
           >
             <span />
@@ -152,11 +152,11 @@ export default function Sidebar({
 
         <aside className="mobile-drawer__panel">
           <div className="mobile-drawer__header">
-            <h2 className="mobile-drawer__title">Menü</h2>
+            <h2 className="mobile-drawer__title">Menu</h2>
             <button
               type="button"
               className="mobile-drawer__close"
-              aria-label="Menüyü kapat"
+              aria-label="Close Menu"
               onClick={() => setMobileOpen(false)}
             >
               ✕
