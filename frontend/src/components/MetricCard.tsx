@@ -8,9 +8,9 @@ type MetricCardProps = {
 };
 
 function getTrendLabel(trend: Metric["trend"]) {
-  if (trend === "up") return "Yükseliyor";
-  if (trend === "down") return "Düşüyor";
-  return "Sabit";
+  if (trend === "up") return "Rising";
+  if (trend === "down") return "Falling";
+  return "Stable";
 }
 
 export default function MetricCard({
@@ -25,7 +25,7 @@ export default function MetricCard({
       type="button"
     >
       <div className="metric-card__top">
-        <span className="metric-card__label">{metric.shortLabel}</span>
+        <span className="metric-card__label">{metric.title}</span>
         <span className={`metric-card__trend trend--${metric.trend}`}>
           {getTrendLabel(metric.trend)}
         </span>

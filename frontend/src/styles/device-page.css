@@ -1,0 +1,125 @@
+.device-selection-page {
+  min-height: 100vh;
+  padding: 0;
+  background: var(--bg);
+}
+
+.device-selection-header {
+  max-width: 1240px;
+  margin: 28px auto 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.device-selection-header h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(2rem, 3vw, 3rem);
+}
+
+.device-selection-header p {
+  color: var(--text-soft);
+  max-width: 720px;
+}
+
+.device-selection-header__eyebrow {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.device-grid {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.device-card {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.device-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.device-card__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.device-card__heading h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.device-card__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.device-card__badge--offline {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.device-card p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.device-card__cta {
+  margin-top: auto;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.device-card--add {
+  border-style: dashed;
+}
+
+@media (max-width: 960px) {
+  .device-selection-page {
+    padding: 0;
+  }
+
+  .global-navbar {
+    padding: 2vh;
+  }
+
+  .device-selection-header {
+    margin: 2vh 3vh;
+  }
+
+  .device-grid {
+    grid-template-columns: 1fr;
+    margin: 2vh;
+  }
+}

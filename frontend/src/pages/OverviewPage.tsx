@@ -1,31 +1,49 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import MetricCard from "../components/MetricCard";
-import SettingsFab from "../components/SettingsFab";
 import { metrics } from "../data/metrics";
 import type { ThemeMode } from "../types/dashboard";
 
 type Props = {
   theme: ThemeMode;
   onToggleTheme: (mode: ThemeMode) => void;
+  isAuthenticated: boolean;
 };
 
-export default function OverviewPage({ theme, onToggleTheme }: Props) {
+export default function OverviewPage({
+  theme,
+  onToggleTheme,
+  isAuthenticated,
+}: Props) {
   const navigate = useNavigate();
+  const { deviceId } = useParams();
+
+  function handleMetricClick(metricId: string) {
+    if (!deviceId) return;
+    navigate(`/devices/${deviceId}/detail/${metricId}`);
+  }
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
+      <Sidebar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
 
       <div className="dashboard-content">
-        <Navbar />
+        <Navbar
+          theme={theme}
+          onToggleTheme={onToggleTheme}
+          isAuthenticated={isAuthenticated}
+        />
 
         <main className="overview-page-only content-shell content-shell--overview">
           <section className="overview-section">
             <div className="section-heading">
               <div>
-                <h2>Sistem Genel Bakış</h2>
+                <h2>System Overview</h2>
               </div>
               <span className="section-heading__badge">Overview</span>
             </div>
@@ -36,14 +54,12 @@ export default function OverviewPage({ theme, onToggleTheme }: Props) {
                   key={metric.id}
                   metric={metric}
                   active={false}
-                  onClick={() => navigate(`/detail/${metric.id}`)}
+                  onClick={handleMetricClick}
                 />
               ))}
             </div>
           </section>
         </main>
-
-        <SettingsFab theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </div>
   );

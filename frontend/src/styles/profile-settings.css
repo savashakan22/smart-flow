@@ -1,0 +1,145 @@
+.profile-page--settings {
+  padding-top: 2vh;
+}
+
+.profile-settings-layout {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.profile-settings-sidebar {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  border-radius: 24px;
+  padding: 16px;
+  height: fit-content;
+  display: grid;
+  gap: 10px;
+}
+
+.profile-settings-tab {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.profile-settings-tab.is-active {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary);
+}
+
+.profile-settings-content {
+  min-width: 0;
+}
+
+.profile-inline-actions {
+  margin-top: 18px;
+}
+
+.profile-settings-sidebar__footer {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.profile-btn--sidebar {
+  width: 100%;
+  justify-content: center;
+}
+
+.profile-devices-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 2000;
+}
+
+.profile-modal {
+  width: min(100%, 560px);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+}
+
+.profile-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profile-modal__header h3 {
+  margin: 4px 0 0;
+}
+
+.profile-modal__close {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.profile-modal__body {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+@media (max-width: 960px) {
+  .device-grid,
+  .profile-settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .profile-devices-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-modal {
+    padding: 18px;
+  }
+
+  .profile-modal__actions {
+    flex-direction: column;
+  }
+}

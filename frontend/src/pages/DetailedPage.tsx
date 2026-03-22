@@ -1,19 +1,24 @@
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DetailPanel from "../components/DetailedPanel";
-import SettingsFab from "../components/SettingsFab";
 import { metrics } from "../data/metrics";
 import type { ThemeMode } from "../types/dashboard";
 
 type Props = {
   theme: ThemeMode;
   onToggleTheme: (mode: ThemeMode) => void;
+  isAuthenticated: boolean;
 };
 
-export default function DetailPage({ theme, onToggleTheme }: Props) {
-  const { metricId } = useParams();
+export default function DetailPage({
+  theme,
+  onToggleTheme,
+  isAuthenticated,
+}: Props) {
+  const navigate = useNavigate();
+  const { deviceId, metricId } = useParams();
 
   const metric = useMemo(
     () => metrics.find((item) => item.id === metricId) ?? metrics[0],
@@ -22,17 +27,32 @@ export default function DetailPage({ theme, onToggleTheme }: Props) {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
+      <Sidebar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
 
       <div className="dashboard-content">
-        <Navbar />
+        <Navbar
+          theme={theme}
+          onToggleTheme={onToggleTheme}
+          isAuthenticated={isAuthenticated}
+        />
 
         <main className="detail-page-only content-shell content-shell--detail">
+          <div className="detail-page-topbar">
+            <button
+              type="button"
+              className="back-overview-btn"
+              onClick={() => navigate(`/devices/${deviceId}/dashboard`)}
+            >
+              Back to overview
+            </button>
+          </div>
 
           <DetailPanel metric={metric} />
         </main>
-
-        <SettingsFab theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </div>
   );
