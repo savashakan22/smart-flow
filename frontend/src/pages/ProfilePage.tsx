@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
-import { devices as initialDevices } from "../data/devices";
+import type { Device } from "../data/devices";
 
 type User = {
   fullName: string;
@@ -12,6 +12,9 @@ type User = {
 type Props = {
   theme: ThemeMode;
   user: User;
+  devices: Device[];
+  onAddDevice: (device: Omit<Device, "id">) => void;
+  onRemoveDevice: (id: string) => void;
   onLogout: () => void;
   onSaveProfile: (profile: User) => void;
   isAuthenticated: boolean;
@@ -23,6 +26,9 @@ type ProfileTab = "personal" | "security" | "devices";
 export default function ProfilePage({
   theme,
   user,
+  devices,
+  onAddDevice,
+  onRemoveDevice,
   onLogout,
   onSaveProfile,
   isAuthenticated,
@@ -31,7 +37,7 @@ export default function ProfilePage({
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<ProfileTab>("personal");
-  const [devices, setDevices] = useState(initialDevices);
+  const [isAddDeviceModalOpen, setIsAddDeviceModalOpen] = useState(false);
 
   const [fullName, setFullName] = useState(user.fullName);
   const [email, setEmail] = useState(user.email);
@@ -40,6 +46,8 @@ export default function ProfilePage({
 
   const [deviceName, setDeviceName] = useState("");
   const [deviceSerial, setDeviceSerial] = useState("");
+  const [wifiSsid, setWifiSsid] = useState("");
+  const [wifiPassword, setWifiPassword] = useState("");
 
   const initials = useMemo(() => {
     return user.fullName
@@ -66,29 +74,40 @@ export default function ProfilePage({
     alert("Password changed");
   }
 
+  function resetDeviceForm() {
+    setDeviceName("");
+    setDeviceSerial("");
+    setWifiSsid("");
+    setWifiPassword("");
+  }
+
   function handleAddDevice() {
-    if (!deviceName.trim() || !deviceSerial.trim()) {
-      alert("Device name and serial number are required");
+    if (
+      !deviceName.trim() ||
+      !deviceSerial.trim() ||
+      !wifiSsid.trim() ||
+      !wifiPassword.trim()
+    ) {
+      alert("Please fill in all device fields");
       return;
     }
 
-    setDevices((prev) => [
-      ...prev,
-      {
-        id: `device-${Date.now()}`,
-        name: deviceName.trim(),
-        location: "Custom Device",
-        serial: deviceSerial.trim(),
-        status: "Online",
-      },
-    ]);
+    onAddDevice({
+      name: deviceName.trim(),
+      serial: deviceSerial.trim(),
+      location: "Custom Device",
+      status: "Online",
+      wifiSsid: wifiSsid.trim(),
+      wifiPassword: wifiPassword.trim(),
+    });
 
-    setDeviceName("");
-    setDeviceSerial("");
+    resetDeviceForm();
+    setIsAddDeviceModalOpen(false);
   }
 
-  function handleRemoveDevice(id: string) {
-    setDevices((prev) => prev.filter((device) => device.id !== id));
+  function handleCloseModal() {
+    resetDeviceForm();
+    setIsAddDeviceModalOpen(false);
   }
 
   function handleLogout() {
@@ -221,33 +240,16 @@ export default function ProfilePage({
 
             {activeTab === "devices" && (
               <section className="profile-card">
-                <p className="profile-card__eyebrow">Device Management</p>
-                <h3>Registered Devices</h3>
-
-                <div className="profile-device-add">
-                  <label className="profile-field">
-                    <span>Device Name</span>
-                    <input
-                      value={deviceName}
-                      onChange={(e) => setDeviceName(e.target.value)}
-                      type="text"
-                      placeholder="Greenhouse Sensor"
-                    />
-                  </label>
-
-                  <label className="profile-field">
-                    <span>Serial Number</span>
-                    <input
-                      value={deviceSerial}
-                      onChange={(e) => setDeviceSerial(e.target.value)}
-                      type="text"
-                      placeholder="SR-3099"
-                    />
-                  </label>
+                <div className="profile-devices-header">
+                  <div>
+                    <p className="profile-card__eyebrow">Device Management</p>
+                    <h3>Registered Devices</h3>
+                  </div>
 
                   <button
-                    onClick={handleAddDevice}
+                    type="button"
                     className="profile-btn profile-btn--primary"
+                    onClick={() => setIsAddDeviceModalOpen(true)}
                   >
                     Add device
                   </button>
@@ -261,11 +263,12 @@ export default function ProfilePage({
                         <p>
                           {device.serial} • {device.status}
                           {device.location ? ` • ${device.location}` : ""}
+                          {device.wifiSsid ? ` • ${device.wifiSsid}` : ""}
                         </p>
                       </div>
 
                       <button
-                        onClick={() => handleRemoveDevice(device.id)}
+                        onClick={() => onRemoveDevice(device.id)}
                         className="profile-btn profile-btn--ghost"
                       >
                         Remove
@@ -278,6 +281,91 @@ export default function ProfilePage({
           </div>
         </div>
       </main>
+
+      {isAddDeviceModalOpen && (
+        <div className="profile-modal-backdrop" onClick={handleCloseModal}>
+          <div
+            className="profile-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="profile-modal__header">
+              <div>
+                <p className="profile-card__eyebrow">New Device</p>
+                <h3>Add Device</h3>
+              </div>
+
+              <button
+                type="button"
+                className="profile-modal__close"
+                onClick={handleCloseModal}
+                aria-label="Close add device modal"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="profile-modal__body">
+              <label className="profile-field">
+                <span>Device Name</span>
+                <input
+                  value={deviceName}
+                  onChange={(e) => setDeviceName(e.target.value)}
+                  type="text"
+                  placeholder="Greenhouse Sensor"
+                />
+              </label>
+
+              <label className="profile-field">
+                <span>Device Serial Number</span>
+                <input
+                  value={deviceSerial}
+                  onChange={(e) => setDeviceSerial(e.target.value)}
+                  type="text"
+                  placeholder="SR-3099"
+                />
+              </label>
+
+              <label className="profile-field">
+                <span>Wi-Fi SSID</span>
+                <input
+                  value={wifiSsid}
+                  onChange={(e) => setWifiSsid(e.target.value)}
+                  type="text"
+                  placeholder="MyHomeWiFi"
+                />
+              </label>
+
+              <label className="profile-field">
+                <span>Wi-Fi Password</span>
+                <input
+                  value={wifiPassword}
+                  onChange={(e) => setWifiPassword(e.target.value)}
+                  type="password"
+                  placeholder="••••••••"
+                />
+              </label>
+            </div>
+
+            <div className="profile-modal__actions">
+              <button
+                type="button"
+                className="profile-btn profile-btn--ghost"
+                onClick={handleCloseModal}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="profile-btn profile-btn--primary"
+                onClick={handleAddDevice}
+              >
+                Save device
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

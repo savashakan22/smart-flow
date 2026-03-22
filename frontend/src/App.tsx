@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
 import DeviceSelectionPage from "./pages/DeviceSelectionPage";
+import { devices as initialDevices, type Device } from "./data/devices";
 
 type UserProfile = {
   fullName: string;
@@ -34,9 +35,18 @@ export default function App() {
       : { fullName: "Ahmet Akgün", email: "ahmet@example.com" };
   });
 
+  const [devices, setDevices] = useState<Device[]>(() => {
+    const saved = localStorage.getItem("smartflow_devices");
+    return saved ? JSON.parse(saved) : initialDevices;
+  });
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("smartflow_devices", JSON.stringify(devices));
+  }, [devices]);
 
   const authActions = useMemo(
     () => ({
@@ -63,6 +73,20 @@ export default function App() {
     }),
     []
   );
+
+  function handleAddDevice(newDevice: Omit<Device, "id">) {
+    setDevices((prev) => [
+      ...prev,
+      {
+        id: `device-${Date.now()}`,
+        ...newDevice,
+      },
+    ]);
+  }
+
+  function handleRemoveDevice(id: string) {
+    setDevices((prev) => prev.filter((device) => device.id !== id));
+  }
 
   return (
     <Routes>
@@ -117,6 +141,7 @@ export default function App() {
             <DeviceSelectionPage
               theme={theme}
               user={user}
+              devices={devices}
               isAuthenticated={isAuthenticated}
               onToggleTheme={setTheme}
             />
@@ -133,7 +158,7 @@ export default function App() {
             />
           }
         />
-        
+
         <Route
           path="/devices/:deviceId/detail/:metricId"
           element={
@@ -151,6 +176,9 @@ export default function App() {
             <ProfilePage
               theme={theme}
               user={user}
+              devices={devices}
+              onAddDevice={handleAddDevice}
+              onRemoveDevice={handleRemoveDevice}
               onLogout={authActions.logout}
               onSaveProfile={authActions.updateUser}
               isAuthenticated={isAuthenticated}

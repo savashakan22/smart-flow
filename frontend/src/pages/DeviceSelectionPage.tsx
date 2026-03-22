@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
-import { devices } from "../data/devices";
+import type { Device } from "../data/devices";
 
 type Props = {
   theme: ThemeMode;
@@ -9,12 +9,14 @@ type Props = {
     fullName: string;
     email: string;
   };
+  devices: Device[];
   isAuthenticated: boolean;
   onToggleTheme: (mode: ThemeMode) => void;
 };
 
 export default function DeviceSelectionPage({
   theme,
+  devices,
   isAuthenticated,
   onToggleTheme,
 }: Props) {
@@ -46,11 +48,17 @@ export default function DeviceSelectionPage({
             className="device-card"
             onClick={() => navigate(`/devices/${device.id}/dashboard`)}
           >
-            <div className="device-card__top">
-              <span className="device-card__badge">{device.status}</span>
+            <div className="device-card__heading">
+              <h3>{device.name}</h3>
+              <span
+                className={`device-card__badge ${
+                  device.status === "Offline" ? "device-card__badge--offline" : ""
+                }`}
+              >
+                {device.status}
+              </span>
             </div>
 
-            <h3>{device.name}</h3>
             <p>{device.location}</p>
 
             <span className="device-card__cta">Open dashboard</span>
@@ -61,7 +69,9 @@ export default function DeviceSelectionPage({
           className="device-card device-card--add"
           onClick={() => navigate("/profile")}
         >
-          <h3>Add new device</h3>
+          <div className="device-card__heading">
+            <h3>Add new device</h3>
+          </div>
           <p>Go to profile settings and register a new device.</p>
           <span className="device-card__cta">Open profile</span>
         </button>

@@ -49,39 +49,54 @@
   box-shadow: var(--shadow-sm);
   padding: 24px;
   cursor: pointer;
-  transition: transform 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .device-card:hover {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.device-card__top {
+.device-card__heading {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.device-card__heading h3 {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .device-card__badge {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(37, 99, 235, 0.12);
   color: var(--primary);
   font-size: 0.8rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
-.device-card h3 {
-  margin: 0 0 8px;
+.device-card__badge--offline {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
 }
 
 .device-card p {
-  margin: 0 0 18px;
+  margin: 0;
   color: var(--text-soft);
 }
 
 .device-card__cta {
+  margin-top: auto;
   font-weight: 700;
   color: var(--primary);
 }
