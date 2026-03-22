@@ -26,7 +26,11 @@ export default function OverviewPage({
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
+      <Sidebar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
 
       <div className="dashboard-content">
         <Navbar

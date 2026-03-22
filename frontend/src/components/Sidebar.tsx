@@ -1,8 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { metrics } from "../data/metrics";
+import type { ThemeMode } from "../types/dashboard";
 
-export default function Sidebar() {
+type Props = {
+  theme: ThemeMode;
+  onToggleTheme: (mode: ThemeMode) => void;
+  isAuthenticated: boolean;
+};
+
+export default function Sidebar({
+  theme,
+  onToggleTheme,
+  isAuthenticated,
+}: Props) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -26,6 +37,10 @@ export default function Sidebar() {
     setMobileOpen(false);
   };
 
+  function handleThemeToggle() {
+    onToggleTheme(theme === "dark" ? "light" : "dark");
+  }
+
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -40,24 +55,48 @@ export default function Sidebar() {
   return (
     <>
       <div className="mobile-topbar">
-        <button
-          type="button"
-          className="hamburger-button"
-          aria-label="Menüyü aç"
-          onClick={() => setMobileOpen(true)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
+        <div className="mobile-topbar__left">
+          <button
+            type="button"
+            className="hamburger-button"
+            aria-label="Menüyü aç"
+            onClick={() => setMobileOpen(true)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
 
-        <button
-          type="button"
-          className="mobile-topbar__title"
-          onClick={() => handleNavigate("/")}
-        >
-          SmartFlow Dashboard
-        </button>
+          <button
+            type="button"
+            className="mobile-topbar__title"
+            onClick={() => handleNavigate("/")}
+          >
+            SmartFlow Dashboard
+          </button>
+        </div>
+
+        <div className="mobile-topbar__actions">
+          <button
+            type="button"
+            className="mobile-topbar__icon-btn"
+            onClick={handleThemeToggle}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? "☾" : "☀"}
+          </button>
+
+          <button
+            type="button"
+            className="mobile-topbar__icon-btn"
+            onClick={() => handleNavigate(isAuthenticated ? "/profile" : "/login")}
+            aria-label={isAuthenticated ? "Open profile" : "Go to login"}
+            title={isAuthenticated ? "Profile" : "Log in"}
+          >
+            {isAuthenticated ? "👤" : "➜"}
+          </button>
+        </div>
       </div>
 
       <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
@@ -97,7 +136,7 @@ export default function Sidebar() {
                   )
                 }
               >
-                <span className="sidebar__icon"></span>
+                <span className="sidebar__icon" />
                 <span>{metric.title}</span>
               </button>
             ))}

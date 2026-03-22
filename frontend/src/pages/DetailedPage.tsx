@@ -27,7 +27,11 @@ export default function DetailPage({
 
   return (
     <div className="dashboard-layout">
-      <Sidebar />
+      <Sidebar
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        isAuthenticated={isAuthenticated}
+      />
 
       <div className="dashboard-content">
         <Navbar

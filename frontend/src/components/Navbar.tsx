@@ -42,9 +42,9 @@ export default function Navbar({
           aria-label={isAuthenticated ? "Open profile" : "Go to login"}
           title={isAuthenticated ? "Profile" : "Log in"}
         >
-          {isAuthenticated ? "👤" : "➜]"}
+          {isAuthenticated ? "👤" : "➜"}
         </button>
       </div>
     </header>
   );
-} 
+}

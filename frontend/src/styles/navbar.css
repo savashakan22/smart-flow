@@ -9,7 +9,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 0 28px;
-  margin: 0 0 3vh 0;
+  margin: 0;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   box-sizing: border-box;
@@ -27,6 +27,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
 }
 
 .global-navbar__icon-btn,
@@ -43,6 +44,7 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
+  flex-shrink: 0;
 }
 
 .global-navbar__icon-btn {
@@ -56,11 +58,21 @@
 @media (max-width: 640px) {
   .global-navbar {
     min-height: 60px;
-    padding: 0 18px;
-    margin-bottom: 0;
+    padding: 0 16px;
+    margin: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .global-navbar__brand {
-    font-size: 1rem;
+    min-width: 0;
+    flex: 1;
+    font-size: 0.95rem;
+  }
+
+  .global-navbar__actions {
+    justify-content: flex-end;
+    flex-shrink: 0;
   }
 }
