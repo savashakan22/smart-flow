@@ -1,5 +1,5 @@
 .profile-page--settings {
-  padding-top: 0;
+  padding-top: 2vh;
 }
 
 .profile-settings-layout {
@@ -130,16 +130,6 @@
 }
 
 @media (max-width: 720px) {
-  .global-navbar,
-  .device-selection-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .global-navbar__actions {
-    justify-content: flex-start;
-  }
-
   .profile-devices-header {
     flex-direction: column;
     align-items: stretch;

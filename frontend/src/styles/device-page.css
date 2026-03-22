@@ -1,6 +1,6 @@
 .device-selection-page {
   min-height: 100vh;
-  padding: 0 24px 32px;
+  padding: 0;
   background: var(--bg);
 }
 
@@ -107,14 +107,19 @@
 
 @media (max-width: 960px) {
   .device-selection-page {
-    padding: 0 16px 24px;
+    padding: 0;
+  }
+
+  .global-navbar {
+    padding: 2vh;
   }
 
   .device-selection-header {
-    margin: 20px auto 24px;
+    margin: 2vh 3vh;
   }
 
   .device-grid {
     grid-template-columns: 1fr;
+    margin: 2vh;
   }
 }
