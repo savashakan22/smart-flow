@@ -262,7 +262,6 @@ export default function ProfilePage({
                         <h4>{device.name}</h4>
                         <p>
                           {device.serial} • {device.status}
-                          {device.location ? ` • ${device.location}` : ""}
                           {device.wifiSsid ? ` • ${device.wifiSsid}` : ""}
                         </p>
                       </div>
