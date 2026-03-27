@@ -15,6 +15,7 @@
   --success: #15803d;
   --warning: #b45309;
   --danger: #dc2626;
+  --online: #3cb468;
   --shadow-sm: 0 8px 24px rgba(16, 24, 40, 0.06);
   --shadow-md: 0 18px 40px rgba(16, 24, 40, 0.08);
   --shadow-lg: 0 28px 60px rgba(16, 24, 40, 0.14);
@@ -41,6 +42,7 @@
   --success: #4ade80;
   --warning: #f59e0b;
   --danger: #f87171;
+  --online: #15803d;
   --shadow-sm: 0 8px 24px rgba(0, 0, 0, 0.22);
   --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 28px 60px rgba(0, 0, 0, 0.34);

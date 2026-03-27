@@ -72,7 +72,7 @@ export default function Sidebar({
             className="mobile-topbar__title"
             onClick={() => handleNavigate("/")}
           >
-            SmartFlow Dashboard
+            Smart-Flow Dashboard
           </button>
         </div>
 
@@ -179,7 +179,7 @@ export default function Sidebar({
                   )
                 }
               >
-                {metric.shortLabel}
+                {metric.title}
               </button>
             ))}
           </div>

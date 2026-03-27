@@ -21,7 +21,7 @@ export default function Navbar({
   return (
     <header className="global-navbar">
       <Link to="/" className="global-navbar__brand">
-        SmartFlow Dashboard
+        Smart-Flow Dashboard
       </Link>
 
       <div className="global-navbar__actions">
