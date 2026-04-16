@@ -1,7 +1,8 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import firebase_admin
-from firebase_admin import credentials, verify_id_token
+from firebase_admin import credentials
+from firebase_admin import auth as firebase_auth
 
 from core.config import get_settings
 
@@ -25,7 +26,7 @@ async def get_current_user(
     _init_firebase()
     token = credentials.credentials
     try:
-        decoded = verify_id_token(token)
+        decoded = firebase_auth.verify_id_token(token)
         return decoded["uid"]
     except Exception as e:
         raise HTTPException(
