@@ -32,6 +32,8 @@ class InfluxService:
     def write_telemetry(
         self, device_id: str, data: Dict[str, Any], timestamp: Optional[datetime] = None
     ) -> None:
+        if not hasattr(self, "_write_api"):
+            self.initialize()
         if timestamp is None:
             timestamp = datetime.now(timezone.utc)
 
@@ -42,9 +44,20 @@ class InfluxService:
         point.time(timestamp)
 
         settings = get_settings()
-        self._write_api.write(
-            bucket=settings.influx_bucket, org=settings.influx_org, record=point
-        )
+        try:
+            logger.info(
+                f"Attempting to write to InfluxDB: bucket={settings.influx_bucket}, org={settings.influx_org}"
+            )
+            logger.info(
+                f"Point data: device_id={device_id}, data={data}, timestamp={timestamp}"
+            )
+            self._write_api.write(
+                bucket=settings.influx_bucket, org=settings.influx_org, record=point
+            )
+            logger.info(f"Write to InfluxDB successful for device {device_id}")
+        except Exception as e:
+            logger.error(f"InfluxDB write failed: {e}")
+            raise
 
     def get_latest_reading(self, device_id: str) -> Optional[Dict[str, Any]]:
         query = f'''
@@ -100,6 +113,11 @@ class InfluxService:
                     row[field] = record.values[field]
             results.append(row)
         return results
+
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_influx_service() -> InfluxService:
