@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-import paho.mqtt.client as mqtt
+from paho.mqtt.client import CallbackAPIVersion, Client
 
 from core.config import get_settings
 from services.influx import get_influx_service
@@ -14,14 +14,17 @@ logger = logging.getLogger(__name__)
 class MQTTSubscriber:
     def __init__(self):
         settings = get_settings()
-        self._client = mqtt.Client(client_id="hydroponic-backend")
+        self._client = Client(
+            callback_api_version=CallbackAPIVersion.VERSION2,
+            client_id="hydroponic-backend",
+        )
         self._client.username_pw_set(settings.mqtt_username, settings.mqtt_password)
         self._client.on_connect = self._on_connect
         self._client.on_message = self._on_message
         self._connected = False
 
-    def _on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
+    def _on_connect(self, client, userdata, flags, reason_code, properties):
+        if reason_code == 0:
             logger.info("Connected to MQTT broker")
             self._connected = True
             client.subscribe("telemetry/#")
