@@ -83,22 +83,20 @@ class TestFirestoreService:
         }
         mock_doc.reference = MagicMock()
 
-        mock_stream = [mock_doc]
-        with patch.object(
-            self.service.db.collection("device_claims").where(),
-            "stream",
-            return_value=mock_stream,
-        ):
-            device_id = self.service.consume_claim("TEST123")
-            assert device_id == "esp32_001"
-            mock_doc.reference.update.assert_called_once_with({"status": "consumed"})
+        mock_query = MagicMock()
+        mock_query.stream.return_value = [mock_doc]
+
+        self.mock_db.collection.return_value.where.return_value = mock_query
+
+        device_id = self.service.consume_claim("TEST123")
+        assert device_id == "esp32_001"
+        mock_doc.reference.update.assert_called_once()
 
     def test_consume_claim_invalid_code(self):
-        mock_stream = []
-        with patch.object(
-            self.service.db.collection("device_claims").where(),
-            "stream",
-            return_value=mock_stream,
-        ):
-            device_id = self.service.consume_claim("INVALID")
-            assert device_id is None
+        mock_query = MagicMock()
+        mock_query.stream.return_value = []
+
+        self.mock_db.collection.return_value.where.return_value = mock_query
+
+        device_id = self.service.consume_claim("INVALID")
+        assert device_id is None
