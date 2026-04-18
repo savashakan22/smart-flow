@@ -1,3 +1,7 @@
 *.env
 firebase-credentials.json
 agents/
+
+# Python cache
+__pycache__/
+*.py[cod]
