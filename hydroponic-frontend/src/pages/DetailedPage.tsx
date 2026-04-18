@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { SkeletonTheme } from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DetailPanel from "../components/DetailedPanel";
+import DetailPanelSkeleton from "../components/DetailedPanelSkeleton";
 import { mapReadingsToMetrics, metrics as fallbackMetrics } from "../data/metrics";
 import type { ThemeMode, Metric } from "../types/dashboard";
 import { fetchHistory, fetchLatestReading } from "../services/api";
@@ -24,9 +27,11 @@ export default function DetailPage({
   const { deviceId, metricId } = useParams();
   const [metrics, setMetrics] = useState<Metric[]>(fallbackMetrics);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!deviceId || !token) {
+      setLoading(false);
       return;
     }
 
@@ -36,6 +41,9 @@ export default function DetailPage({
 
     async function load() {
       try {
+        setLoading(true);
+        setError("");
+
         const [latest, history] = await Promise.all([
           fetchLatestReading(selectedDeviceId, authToken),
           fetchHistory(selectedDeviceId, authToken),
@@ -46,6 +54,10 @@ export default function DetailPage({
       } catch (loadError) {
         if (!isMounted) return;
         setError(loadError instanceof Error ? loadError.message : "Failed to load metric details");
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
@@ -61,36 +73,45 @@ export default function DetailPage({
     [metricId, metrics]
   );
 
-  return (
-    <div className="dashboard-layout">
-      <Sidebar
-        theme={theme}
-        onToggleTheme={onToggleTheme}
-        isAuthenticated={isAuthenticated}
-      />
+  const skeletonBaseColor = theme === "dark" ? "#2a2f3a" : "#e9edf3";
+  const skeletonHighlightColor = theme === "dark" ? "#3a4150" : "#f5f7fa";
 
-      <div className="dashboard-content">
-        <Navbar
+  return (
+    <SkeletonTheme
+      baseColor={skeletonBaseColor}
+      highlightColor={skeletonHighlightColor}
+    >
+      <div className="dashboard-layout">
+        <Sidebar
           theme={theme}
           onToggleTheme={onToggleTheme}
           isAuthenticated={isAuthenticated}
         />
 
-        <main className="detail-page-only content-shell content-shell--detail">
-          <div className="detail-page-topbar">
-            <button
-              type="button"
-              className="back-overview-btn"
-              onClick={() => navigate(`/devices/${deviceId}/dashboard`)}
-            >
-              Back to overview
-            </button>
-          </div>
+        <div className="dashboard-content">
+          <Navbar
+            theme={theme}
+            onToggleTheme={onToggleTheme}
+            isAuthenticated={isAuthenticated}
+          />
 
-          {error && <p className="auth-error">{error}</p>}
-          <DetailPanel metric={metric} />
-        </main>
+          <main className="detail-page-only content-shell content-shell--detail">
+            <div className="detail-page-topbar">
+              <button
+                type="button"
+                className="back-overview-btn"
+                onClick={() => navigate(`/devices/${deviceId}/dashboard`)}
+              >
+                Back to overview
+              </button>
+            </div>
+
+            {error && <p className="auth-error">{error}</p>}
+
+            {loading ? <DetailPanelSkeleton /> : <DetailPanel metric={metric} />}
+          </main>
+        </div>
       </div>
-    </div>
+    </SkeletonTheme>
   );
 }
