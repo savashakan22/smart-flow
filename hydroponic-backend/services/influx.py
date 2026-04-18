@@ -5,6 +5,15 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 from core.config import get_settings
 
+METRIC_FIELDS = (
+    "ec",
+    "air_temp",
+    "humidity",
+    "water_level",
+    "water_temp",
+    "light",
+)
+
 
 class InfluxService:
     _instance: Optional["InfluxService"] = None
@@ -39,7 +48,7 @@ class InfluxService:
 
         point = Point("sensor_readings").tag("device_id", device_id)
         for field, value in data.items():
-            if field != "timestamp":
+            if field != "timestamp" and value is not None:
                 point.field(field, float(value))
         point.time(timestamp)
 
@@ -62,9 +71,12 @@ class InfluxService:
     def get_latest_reading(self, device_id: str) -> Optional[Dict[str, Any]]:
         query = f'''
         from(bucket: "{get_settings().influx_bucket}")
-            |> range(start: -1h)
+            |> range(start: -30d)
+            |> filter(fn: (r) => r["_measurement"] == "sensor_readings")
             |> filter(fn: (r) => r["device_id"] == "{device_id}")
-            |> last()
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> sort(columns: ["_time"], desc: true)
+            |> limit(n: 1)
         '''
         tables = self.client.query_api().query(query)
 
@@ -73,14 +85,7 @@ class InfluxService:
 
         record = tables[0].records[0]
         result = {"device_id": device_id, "timestamp": record.get_time().isoformat()}
-        for field in [
-            "ec",
-            "air_temp",
-            "humidity",
-            "water_level",
-            "water_temp",
-            "light",
-        ]:
+        for field in METRIC_FIELDS:
             result[field] = record.values.get(field)
         return result
 
@@ -90,7 +95,9 @@ class InfluxService:
         query = f'''
         from(bucket: "{get_settings().influx_bucket}")
             |> range(start: {start.isoformat()}, stop: {end.isoformat()})
+            |> filter(fn: (r) => r["_measurement"] == "sensor_readings")
             |> filter(fn: (r) => r["device_id"] == "{device_id}")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> sort(columns: ["_time"])
         '''
         tables = self.client.query_api().query(query)
@@ -99,19 +106,13 @@ class InfluxService:
             return []
 
         results = []
-        for record in tables[0].records:
-            row = {"timestamp": record.get_time().isoformat()}
-            for field in [
-                "ec",
-                "air_temp",
-                "humidity",
-                "water_level",
-                "water_temp",
-                "light",
-            ]:
-                if field in record.values:
-                    row[field] = record.values[field]
-            results.append(row)
+        for table in tables:
+            for record in table.records:
+                row = {"timestamp": record.get_time().isoformat()}
+                for field in METRIC_FIELDS:
+                    if field in record.values:
+                        row[field] = record.values[field]
+                results.append(row)
         return results
 
 
