@@ -13,24 +13,12 @@ type ChartPoint = {
 };
 
 function getMetricHistory(metric: Metric): number[] {
-  const current = metric.value;
-
-  switch (metric.id) {
-    case "ph":
-      return [5.9, 6.0, 6.1, 6.15, 6.2];
-    case "ec":
-      return [1.5, 1.6, 1.7, 1.75, 1.8];
-    case "water-temp":
-      return [21.2, 21.6, 21.9, 22.1, 22.4];
-    case "air-temp":
-      return [26.2, 25.7, 25.4, 25.0, 24.8];
-    case "humidity":
-      return [58, 59, 60, 60.5, 61];
-    case "water-level":
-      return [82, 79, 77, 75, 73];
-    default:
-      return [current - 2, current - 1.2, current - 0.6, current - 0.2, current];
+  if (metric.history && metric.history.length > 1) {
+    return metric.history.slice(-8);
   }
+
+  const current = metric.value;
+  return [current - 2, current - 1.2, current - 0.6, current - 0.2, current];
 }
 
 function linearRegressionForecast(history: number[], count = 3): number[] {

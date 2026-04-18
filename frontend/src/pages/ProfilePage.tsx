@@ -13,10 +13,9 @@ type Props = {
   theme: ThemeMode;
   user: User;
   devices: Device[];
-  onAddDevice: (device: Omit<Device, "id">) => void;
-  onRemoveDevice: (id: string) => void;
-  onLogout: () => void;
-  onSaveProfile: (profile: User) => void;
+  onClaimDevice: (claimCode: string) => Promise<void>;
+  onLogout: () => Promise<void>;
+  onSaveProfile: (profile: User) => Promise<void>;
   isAuthenticated: boolean;
   onToggleTheme: (mode: ThemeMode) => void;
 };
@@ -27,8 +26,7 @@ export default function ProfilePage({
   theme,
   user,
   devices,
-  onAddDevice,
-  onRemoveDevice,
+  onClaimDevice,
   onLogout,
   onSaveProfile,
   isAuthenticated,
@@ -44,10 +42,8 @@ export default function ProfilePage({
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  const [deviceName, setDeviceName] = useState("");
-  const [deviceSerial, setDeviceSerial] = useState("");
-  const [wifiSsid, setWifiSsid] = useState("");
-  const [wifiPassword, setWifiPassword] = useState("");
+  const [claimCode, setClaimCode] = useState("");
+  const [deviceError, setDeviceError] = useState("");
 
   const initials = useMemo(() => {
     return user.fullName
@@ -58,8 +54,8 @@ export default function ProfilePage({
       .toUpperCase();
   }, [user.fullName]);
 
-  function handleSaveProfile() {
-    onSaveProfile({ fullName, email });
+  async function handleSaveProfile() {
+    await onSaveProfile({ fullName, email });
     alert("Profile updated");
   }
 
@@ -71,47 +67,33 @@ export default function ProfilePage({
 
     setCurrentPassword("");
     setNewPassword("");
-    alert("Password changed");
+    alert("Password changes are managed in Firebase console.");
   }
 
-  function resetDeviceForm() {
-    setDeviceName("");
-    setDeviceSerial("");
-    setWifiSsid("");
-    setWifiPassword("");
-  }
-
-  function handleAddDevice() {
-    if (
-      !deviceName.trim() ||
-      !deviceSerial.trim() ||
-      !wifiSsid.trim() ||
-      !wifiPassword.trim()
-    ) {
-      alert("Please fill in all device fields");
+  async function handleClaimDeviceSubmit() {
+    if (!claimCode.trim()) {
+      setDeviceError("Please enter a claim code");
       return;
     }
 
-    onAddDevice({
-      name: deviceName.trim(),
-      serial: deviceSerial.trim(),
-      location: "Custom Device",
-      status: "Online",
-      wifiSsid: wifiSsid.trim(),
-      wifiPassword: wifiPassword.trim(),
-    });
-
-    resetDeviceForm();
-    setIsAddDeviceModalOpen(false);
+    try {
+      setDeviceError("");
+      await onClaimDevice(claimCode.trim());
+      setClaimCode("");
+      setIsAddDeviceModalOpen(false);
+    } catch (claimError) {
+      setDeviceError(claimError instanceof Error ? claimError.message : "Unable to claim device");
+    }
   }
 
   function handleCloseModal() {
-    resetDeviceForm();
+    setClaimCode("");
+    setDeviceError("");
     setIsAddDeviceModalOpen(false);
   }
 
-  function handleLogout() {
-    onLogout();
+  async function handleLogout() {
+    await onLogout();
     navigate("/login");
   }
 
@@ -251,7 +233,7 @@ export default function ProfilePage({
                     className="profile-btn profile-btn--primary"
                     onClick={() => setIsAddDeviceModalOpen(true)}
                   >
-                    Add device
+                    Claim device
                   </button>
                 </div>
 
@@ -260,18 +242,8 @@ export default function ProfilePage({
                     <div key={device.id} className="device-item">
                       <div>
                         <h4>{device.name}</h4>
-                        <p>
-                          {device.serial} • {device.status}
-                          {device.wifiSsid ? ` • ${device.wifiSsid}` : ""}
-                        </p>
+                        <p>{device.serial} • {device.status}</p>
                       </div>
-
-                      <button
-                        onClick={() => onRemoveDevice(device.id)}
-                        className="profile-btn profile-btn--ghost"
-                      >
-                        Remove
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -283,83 +255,22 @@ export default function ProfilePage({
 
       {isAddDeviceModalOpen && (
         <div className="profile-modal-backdrop" onClick={handleCloseModal}>
-          <div
-            className="profile-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="profile-modal__header">
-              <div>
-                <p className="profile-card__eyebrow">New Device</p>
-                <h3>Add Device</h3>
-              </div>
-
-              <button
-                type="button"
-                className="profile-modal__close"
-                onClick={handleCloseModal}
-                aria-label="Close add device modal"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="profile-modal__body">
-              <label className="profile-field">
-                <span>Device Name</span>
-                <input
-                  value={deviceName}
-                  onChange={(e) => setDeviceName(e.target.value)}
-                  type="text"
-                  placeholder="Greenhouse Sensor"
-                />
-              </label>
-
-              <label className="profile-field">
-                <span>Device Serial Number</span>
-                <input
-                  value={deviceSerial}
-                  onChange={(e) => setDeviceSerial(e.target.value)}
-                  type="text"
-                  placeholder="SR-3099"
-                />
-              </label>
-
-              <label className="profile-field">
-                <span>Wi-Fi SSID</span>
-                <input
-                  value={wifiSsid}
-                  onChange={(e) => setWifiSsid(e.target.value)}
-                  type="text"
-                  placeholder="MyHomeWiFi"
-                />
-              </label>
-
-              <label className="profile-field">
-                <span>Wi-Fi Password</span>
-                <input
-                  value={wifiPassword}
-                  onChange={(e) => setWifiPassword(e.target.value)}
-                  type="password"
-                  placeholder="••••••••"
-                />
-              </label>
-            </div>
-
+          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Claim device</h3>
+            <p>Enter the claim code generated by your device.</p>
+            <input
+              value={claimCode}
+              onChange={(e) => setClaimCode(e.target.value)}
+              placeholder="CLAIM-XXXX"
+              className="profile-modal__input"
+            />
+            {deviceError && <p className="auth-error">{deviceError}</p>}
             <div className="profile-modal__actions">
-              <button
-                type="button"
-                className="profile-btn profile-btn--ghost"
-                onClick={handleCloseModal}
-              >
+              <button className="profile-btn profile-btn--ghost" onClick={handleCloseModal}>
                 Cancel
               </button>
-
-              <button
-                type="button"
-                className="profile-btn profile-btn--primary"
-                onClick={handleAddDevice}
-              >
-                Save device
+              <button className="profile-btn profile-btn--primary" onClick={handleClaimDeviceSubmit}>
+                Claim
               </button>
             </div>
           </div>

@@ -14,6 +14,7 @@ export type Metric = {
   description: string;
   trend: TrendDirection;
   lastUpdated: string;
+  history?: number[];
 };
 
 export type ThemeMode = "light" | "dark";

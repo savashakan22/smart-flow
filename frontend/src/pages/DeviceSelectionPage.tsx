@@ -42,6 +42,15 @@ export default function DeviceSelectionPage({
       </header>
 
       <section className="device-grid">
+        {devices.length === 0 && (
+          <article className="device-card device-card--add">
+            <div className="device-card__heading">
+              <h3>No devices yet</h3>
+            </div>
+            <p>Claim a device from the profile page to start monitoring data.</p>
+          </article>
+        )}
+
         {devices.map((device) => (
           <button
             key={device.id}

@@ -4,36 +4,16 @@ export type Device = {
   location: string;
   serial: string;
   status: "Online" | "Offline";
-  wifiSsid?: string;
-  wifiPassword?: string;
 };
 
-export const devices: Device[] = [
-  {
-    id: "device-a",
-    name: "Device A",
-    location: "House",
-    serial: "SM-1001",
+export const devices: Device[] = [];
+
+export function mapDeviceIdToCard(deviceId: string): Device {
+  return {
+    id: deviceId,
+    serial: deviceId,
+    name: deviceId,
+    location: "Connected device",
     status: "Online",
-    wifiSsid: "Home WiFi",
-    wifiPassword: "********",
-  },
-  {
-    id: "device-b",
-    name: "Device B",
-    location: "Balcony",
-    serial: "TM-2088",
-    status: "Online",
-    wifiSsid: "Balcony Net",
-    wifiPassword: "********",
-  },
-  {
-    id: "device-c",
-    name: "Device C",
-    location: "School",
-    serial: "SR-3099",
-    status: "Offline",
-    wifiSsid: "Campus IoT",
-    wifiPassword: "********",
-  },
-];
+  };
+}

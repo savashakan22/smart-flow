@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword, type User } from "firebase/auth";
 import type { ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
+import { assertFirebaseConfigured, auth } from "../lib/firebase";
 
 type Props = {
   theme: ThemeMode;
-  onLogin: (profile: { fullName: string; email: string }) => void;
+  onLogin: (user: User) => Promise<void>;
   isAuthenticated: boolean;
   onToggleTheme: (mode: ThemeMode) => void;
 };
@@ -20,16 +22,19 @@ export default function LoginPage({
   const [email, setEmail] = useState("example@mail.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    onLogin({
-      fullName: "Ahmet Akgun",
-      email,
-    });
-
-    navigate("/devices");
+    try {
+      assertFirebaseConfigured();
+      const credential = await signInWithEmailAndPassword(auth!, email, password);
+      await onLogin(credential.user);
+      navigate("/devices");
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "Login failed");
+    }
   }
 
   return (
@@ -43,7 +48,7 @@ export default function LoginPage({
       <div className="auth-card">
         <p className="auth-card__eyebrow">Welcome</p>
         <h1>Login</h1>
-        <p className="auth-card__description">Login</p>
+        <p className="auth-card__description">Use your Firebase account to continue.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-field">
@@ -77,13 +82,15 @@ export default function LoginPage({
             </div>
           </label>
 
+          {error && <p className="auth-error">{error}</p>}
+
           <button type="submit" className="auth-submit-btn">
             Log in
           </button>
         </form>
 
         <p className="auth-footer">
-          Don't you have an account? <Link to="/signup">Sign Up</Link>
+          Don&apos;t you have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>
     </main>

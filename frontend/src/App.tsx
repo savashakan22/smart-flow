@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { onAuthStateChanged, signOut, updateProfile, type User } from "firebase/auth";
 import "./App.css";
 
 import type { ThemeMode } from "./types/dashboard";
@@ -10,7 +11,9 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
 import DeviceSelectionPage from "./pages/DeviceSelectionPage";
-import { devices as initialDevices, type Device } from "./data/devices";
+import { devices as initialDevices, mapDeviceIdToCard, type Device } from "./data/devices";
+import { auth } from "./lib/firebase";
+import { claimDevice, fetchDevices } from "./services/api";
 
 type UserProfile = {
   fullName: string;
@@ -21,71 +24,106 @@ function ProtectedRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
+function profileFromUser(user: User): UserProfile {
+  return {
+    fullName: user.displayName ?? "SmartFlow User",
+    email: user.email ?? "",
+  };
+}
+
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>("light");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<UserProfile>({ fullName: "", email: "" });
+  const [token, setToken] = useState<string | null>(null);
+  const [devices, setDevices] = useState<Device[]>(initialDevices);
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem("auth_session") === "true";
-  });
-
-  const [user, setUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem("auth_user");
-    return saved
-      ? JSON.parse(saved)
-      : { fullName: "Ahmet Akgün", email: "ahmet@example.com" };
-  });
-
-  const [devices, setDevices] = useState<Device[]>(() => {
-    const saved = localStorage.getItem("smartflow_devices");
-    return saved ? JSON.parse(saved) : initialDevices;
-  });
+  const loadDevices = useCallback(async (idToken: string) => {
+    const response = await fetchDevices(idToken);
+    setDevices(response.devices.map(mapDeviceIdToCard));
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem("smartflow_devices", JSON.stringify(devices));
-  }, [devices]);
+    if (!auth) {
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setIsAuthenticated(false);
+        setUser({ fullName: "", email: "" });
+        setToken(null);
+        setDevices([]);
+        return;
+      }
+
+      const idToken = await firebaseUser.getIdToken();
+      setToken(idToken);
+      setUser(profileFromUser(firebaseUser));
+      setIsAuthenticated(true);
+
+      try {
+        await loadDevices(idToken);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    return unsubscribe;
+  }, [loadDevices]);
 
   const authActions = useMemo(
     () => ({
-      login: (profile: UserProfile) => {
-        localStorage.setItem("auth_session", "true");
-        localStorage.setItem("auth_user", JSON.stringify(profile));
-        setUser(profile);
+      login: async (firebaseUser: User) => {
+        const idToken = await firebaseUser.getIdToken();
+        setToken(idToken);
+        setUser(profileFromUser(firebaseUser));
         setIsAuthenticated(true);
+        await loadDevices(idToken);
       },
-      signup: (profile: UserProfile) => {
-        localStorage.setItem("auth_session", "true");
-        localStorage.setItem("auth_user", JSON.stringify(profile));
-        setUser(profile);
+      signup: async (firebaseUser: User, fullName: string) => {
+        if (auth?.currentUser && fullName) {
+          await updateProfile(auth.currentUser, { displayName: fullName });
+        }
+
+        const idToken = await firebaseUser.getIdToken();
+        setToken(idToken);
+        setUser({ fullName: fullName || "SmartFlow User", email: firebaseUser.email ?? "" });
         setIsAuthenticated(true);
+        await loadDevices(idToken);
       },
-      logout: () => {
-        localStorage.removeItem("auth_session");
+      logout: async () => {
+        if (auth) {
+          await signOut(auth);
+        }
+        setToken(null);
         setIsAuthenticated(false);
       },
-      updateUser: (profile: UserProfile) => {
-        localStorage.setItem("auth_user", JSON.stringify(profile));
+      updateUser: async (profile: UserProfile) => {
+        if (auth?.currentUser) {
+          await updateProfile(auth.currentUser, { displayName: profile.fullName });
+        }
         setUser(profile);
       },
     }),
-    []
+    [loadDevices]
   );
 
-  function handleAddDevice(newDevice: Omit<Device, "id">) {
-    setDevices((prev) => [
-      ...prev,
-      {
-        id: `device-${Date.now()}`,
-        ...newDevice,
-      },
-    ]);
-  }
+  async function handleClaimDevice(claimCode: string) {
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
 
-  function handleRemoveDevice(id: string) {
-    setDevices((prev) => prev.filter((device) => device.id !== id));
+    const response = await claimDevice(claimCode, token);
+    if (!response.success) {
+      throw new Error(response.detail ?? "Unable to claim device");
+    }
+
+    await loadDevices(token);
   }
 
   return (
@@ -155,6 +193,7 @@ export default function App() {
               theme={theme}
               onToggleTheme={setTheme}
               isAuthenticated={isAuthenticated}
+              token={token}
             />
           }
         />
@@ -166,6 +205,7 @@ export default function App() {
               theme={theme}
               onToggleTheme={setTheme}
               isAuthenticated={isAuthenticated}
+              token={token}
             />
           }
         />
@@ -177,8 +217,7 @@ export default function App() {
               theme={theme}
               user={user}
               devices={devices}
-              onAddDevice={handleAddDevice}
-              onRemoveDevice={handleRemoveDevice}
+              onClaimDevice={handleClaimDevice}
               onLogout={authActions.logout}
               onSaveProfile={authActions.updateUser}
               isAuthenticated={isAuthenticated}
