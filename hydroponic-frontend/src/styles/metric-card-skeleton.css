@@ -1,0 +1,24 @@
+.metric-card--skeleton {
+  pointer-events: none;
+  cursor: default;
+}
+
+.metric-card__meter--skeleton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 190px;
+}
+
+.circle-skeleton {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-skeleton > span {
+  line-height: 0;
+}
