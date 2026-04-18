@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime, timezone
 from typing import Optional
@@ -6,6 +5,9 @@ from typing import Optional
 from paho.mqtt.client import CallbackAPIVersion, Client
 
 from core.config import get_settings
+from services.alerts import get_alert_service
+from services.crypto import ProtectedPayloadError, get_crypto_service
+from services.firestore import get_firestore_service
 from services.influx import get_influx_service
 
 logger = logging.getLogger(__name__)
@@ -28,37 +30,132 @@ class MQTTSubscriber:
             logger.info("Connected to MQTT broker")
             self._connected = True
             client.subscribe("telemetry/#")
+            client.subscribe("provisioning/#")
+            client.subscribe("status/#")
         else:
-            logger.error(f"MQTT connection failed with code {rc}")
+            logger.error(f"MQTT connection failed with code {reason_code}")
+
+    def _handle_provisioning(self, device_id: str, payload: dict) -> None:
+        claim_code = payload.get("claim_code")
+        if not claim_code:
+            logger.warning("Provisioning payload missing claim_code for %s", device_id)
+            return
+
+        firestore = get_firestore_service()
+        firestore.upsert_device_registration(device_id, payload)
+        firestore.create_or_refresh_claim(device_id, claim_code)
+        logger.info("Provisioned device %s with claim code %s", device_id, claim_code)
+
+    def _handle_status(self, device_id: str, payload: dict) -> None:
+        firestore = get_firestore_service()
+        firestore.update_device_status(device_id, payload)
+
+    def _parse_timestamp(self, raw_timestamp) -> datetime:
+        if raw_timestamp is None:
+            return datetime.now(timezone.utc)
+
+        if isinstance(raw_timestamp, (int, float)):
+            return datetime.fromtimestamp(raw_timestamp, timezone.utc)
+
+        if isinstance(raw_timestamp, str):
+            normalized = raw_timestamp.strip()
+            if normalized.isdigit():
+                return datetime.fromtimestamp(int(normalized), timezone.utc)
+            return datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+
+        return datetime.now(timezone.utc)
+
+    def _handle_telemetry(self, device_id: str, payload: dict) -> None:
+        timestamp = self._parse_timestamp(payload.get("timestamp"))
+
+        telemetry_data = {
+            "ec": payload.get("ec"),
+            "air_temp": payload.get("air_temp"),
+            "humidity": payload.get("humidity"),
+            "water_level": payload.get("water_level"),
+            "water_temp": payload.get("water_temp"),
+            "light": payload.get("light"),
+        }
+
+        influx = get_influx_service()
+        influx.write_telemetry(device_id, telemetry_data, timestamp)
+
+        firestore = get_firestore_service()
+        firestore.update_device_status(
+            device_id,
+            {
+                "last_telemetry_at": timestamp.isoformat(),
+                "telemetry_schema": "v2",
+                "online": True,
+            },
+        )
+
+        alerts = get_alert_service().evaluate_readings(device_id, telemetry_data)
+        logger.info(
+            "Stored telemetry for device %s and generated %s alerts",
+            device_id,
+            len(alerts),
+        )
+
+    def _decode_and_verify(self, namespace: str, device_id: str, raw_payload: str) -> dict | None:
+        crypto = get_crypto_service()
+        firestore = get_firestore_service()
+
+        try:
+            protected = crypto.decrypt_message(
+                namespace=namespace,
+                device_id=device_id,
+                raw_payload=raw_payload,
+            )
+        except ProtectedPayloadError as exc:
+            logger.warning(
+                "Rejected %s payload for %s: %s", namespace, device_id, exc
+            )
+            return None
+
+        if namespace != "provisioning" and not firestore.device_exists(device_id):
+            logger.warning(
+                "Rejected %s payload for unknown device %s", namespace, device_id
+            )
+            return None
+
+        if not firestore.accept_message_sequence(
+            device_id, namespace, protected.sequence
+        ):
+            logger.warning(
+                "Rejected replayed %s payload for %s with sequence %s",
+                namespace,
+                device_id,
+                protected.sequence,
+            )
+            return None
+
+        return protected.payload
 
     def _on_message(self, client, userdata, msg):
         try:
             topic_parts = msg.topic.split("/")
-            if len(topic_parts) < 2 or topic_parts[0] != "telemetry":
-                logger.warning(f"Unexpected topic format: {msg.topic}")
+            if len(topic_parts) < 2:
+                logger.warning("Unexpected topic format: %s", msg.topic)
                 return
 
+            namespace = topic_parts[0]
             device_id = topic_parts[1]
-            payload = json.loads(msg.payload.decode())
+            if namespace not in {"telemetry", "provisioning", "status"}:
+                logger.warning("Unexpected topic namespace: %s", msg.topic)
+                return
 
-            timestamp = datetime.now(timezone.utc)
-            if "timestamp" in payload:
-                timestamp = datetime.fromisoformat(
-                    payload["timestamp"].replace("Z", "+00:00")
-                )
+            raw_payload = msg.payload.decode()
+            payload = self._decode_and_verify(namespace, device_id, raw_payload)
+            if payload is None:
+                return
 
-            telemetry_data = {
-                "ec": payload.get("ec"),
-                "air_temp": payload.get("air_temp"),
-                "humidity": payload.get("humidity"),
-                "water_level": payload.get("water_level"),
-                "water_temp": payload.get("water_temp"),
-                "light": payload.get("light"),
-            }
-
-            influx = get_influx_service()
-            influx.write_telemetry(device_id, telemetry_data, timestamp)
-            logger.info(f"Stored telemetry for device {device_id}")
+            if namespace == "telemetry":
+                self._handle_telemetry(device_id, payload)
+            elif namespace == "provisioning":
+                self._handle_provisioning(device_id, payload)
+            elif namespace == "status":
+                self._handle_status(device_id, payload)
 
         except Exception as e:
             logger.error(f"Error processing MQTT message: {e}")
@@ -66,7 +163,7 @@ class MQTTSubscriber:
     def start(self):
         settings = get_settings()
         logger.info(f"Connecting to MQTT broker at {settings.mqtt_ip}")
-        self._client.connect(settings.mqtt_ip, 1883, 60)
+        self._client.connect(settings.mqtt_ip, settings.mqtt_port, 60)
         self._client.loop_start()
 
     def stop(self):

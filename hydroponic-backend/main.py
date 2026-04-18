@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
 
+from api.alerts import router as alerts_router
 from api.sensors import router as sensors_router
 from api.dependencies import get_current_user
 from services.firestore import get_firestore_service
@@ -43,6 +44,7 @@ app.add_middleware(
 )
 
 app.include_router(sensors_router)
+app.include_router(alerts_router)
 
 
 @app.get("/ping")

@@ -6,6 +6,14 @@ from influxdb_client_3 import InfluxDBClient3, Point
 
 from core.config import get_settings
 
+METRIC_FIELDS = (
+    "ec",
+    "air_temp",
+    "humidity",
+    "water_level",
+    "water_temp",
+    "light",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -41,7 +49,7 @@ class InfluxService:
 
         point = Point("sensor_readings").tag("device_id", device_id)
         for field, value in data.items():
-            if field != "timestamp":
+            if field != "timestamp" and value is not None:
                 point.field(field, float(value))
         point.time(timestamp)
 
