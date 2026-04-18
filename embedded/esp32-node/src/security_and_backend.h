@@ -268,7 +268,7 @@ class BackendClient {
     }
 
     String willPayload;
-    if (!buildProtectedStatusEnvelope(false, "unexpected_disconnect", willPayload)) {
+    if (!buildProtectedStatusEnvelope(false, willPayload)) {
       return false;
     }
 
@@ -303,13 +303,6 @@ class BackendClient {
     DynamicJsonDocument doc(512);
     doc["device_id"] = config_.deviceId;
     doc["claim_code"] = config_.claimCode;
-    JsonArray capabilities = doc["capabilities"].to<JsonArray>();
-    capabilities.add("ec");
-    capabilities.add("air_temp");
-    capabilities.add("humidity");
-    capabilities.add("water_level");
-    capabilities.add("water_temp");
-    capabilities.add("light");
 
     String protectedPayload;
     if (!crypto_.protect(
@@ -326,9 +319,9 @@ class BackendClient {
         true);
   }
 
-  bool publishStatus(bool online, const char* reason = nullptr) {
+  bool publishStatus(bool online) {
     String protectedPayload;
-    if (!buildProtectedStatusEnvelope(online, reason, protectedPayload)) {
+    if (!buildProtectedStatusEnvelope(online, protectedPayload)) {
       return false;
     }
 
@@ -360,17 +353,10 @@ class BackendClient {
   SequenceManager sequences_;
   CryptoSuite crypto_;
 
-  bool buildProtectedStatusEnvelope(
-      bool online,
-      const char* reason,
-      String& protectedPayload) {
+  bool buildProtectedStatusEnvelope(bool online, String& protectedPayload) {
     DynamicJsonDocument doc(256);
     doc["device_id"] = config_.deviceId;
     doc["online"] = online;
-    doc["boot_count"] = bootCount;
-    if (reason != nullptr) {
-      doc["reason"] = reason;
-    }
 
     return crypto_.protect("status", sequences_.nextStatusSequence(), doc, protectedPayload);
   }

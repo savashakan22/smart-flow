@@ -34,8 +34,6 @@ constexpr float kWaterLevelFullRaw = 2600.0f;
 constexpr float kLdrDarkRaw = 400.0f;
 constexpr float kLdrBrightRaw = 3200.0f;
 
-extern uint32_t bootCount;
-
 struct DeviceConfig {
   String deviceId;
   String claimCode;

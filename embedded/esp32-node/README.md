@@ -72,14 +72,11 @@ Provisioning payload fields:
 
 - `device_id`
 - `claim_code`
-- `capabilities`
 
 Status payload fields:
 
 - `device_id`
 - `online`
-- `boot_count`
-- `reason` when present
 
 ## Hardware assumptions
 

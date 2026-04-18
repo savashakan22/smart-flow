@@ -114,14 +114,6 @@ class VirtualDevice:
         return {
             "device_id": self.device_id,
             "claim_code": f"SIM_CLAIM_{self.device_id}",
-            "capabilities": [
-                "ec",
-                "air_temp",
-                "humidity",
-                "water_level",
-                "water_temp",
-                "light",
-            ],
         }
 
     def publish(self):

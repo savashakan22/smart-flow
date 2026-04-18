@@ -6,8 +6,6 @@
 
 namespace smartflow {
 
-RTC_DATA_ATTR uint32_t bootCount = 0;
-
 SensorSuite sensorSuite;
 ConfigStore configStore;
 TelemetryBuffer telemetryBuffer;
@@ -40,8 +38,6 @@ void setup() {
 
   Serial.begin(kSerialBaud);
   delay(100);
-  ++bootCount;
-
   DeviceConfig config;
   configStore.load(config);
 
@@ -81,7 +77,7 @@ void setup() {
   }
 
   backendClient.publishProvisioning();
-  backendClient.publishStatus(true, "boot");
+  backendClient.publishStatus(true);
   telemetryBuffer.flush(
       [&](const String& payload) { return backendClient.publishBufferedPayload(payload); });
 
@@ -95,7 +91,7 @@ void setup() {
     Serial.println("Sensor read failed.");
   }
 
-  backendClient.publishStatus(false, "sleep");
+  backendClient.publishStatus(false);
   goToDeepSleep(config.sleepSeconds);
 }
 
