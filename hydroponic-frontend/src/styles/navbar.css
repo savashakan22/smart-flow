@@ -1,0 +1,61 @@
+.global-navbar {
+  position: relative;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 12vh;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  box-sizing: border-box;
+}
+
+.global-navbar__brand {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.global-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.global-navbar__icon-btn,
+.global-navbar__profile-btn {
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.global-navbar__icon-btn {
+  font-size: 1.05rem;
+}
+
+.global-navbar__profile-btn {
+  font-size: 1rem;
+}
+
+@media (max-width: 960px) {
+  .global-navbar {
+    padding: 0 2vh;
+  }
+}

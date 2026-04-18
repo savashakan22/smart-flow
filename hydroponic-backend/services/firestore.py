@@ -1,6 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 from typing import List, Optional
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 from core.config import get_settings
 
@@ -47,7 +48,7 @@ class FirestoreService:
     def get_pending_claims(self) -> List[dict]:
         docs = (
             self.db.collection("device_claims")
-            .where("status", "==", "pending")
+            .where(filter=FieldFilter("status", "==", "pending"))
             .stream()
         )
         return [{"id": doc.id, **doc.to_dict()} for doc in docs]
