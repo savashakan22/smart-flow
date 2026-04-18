@@ -27,7 +27,7 @@ export default function LandingPage({
 
       <section className="landing-hero">
         <div className="landing-hero__content">
-          <span className="landing-badge">SmartFlow Dashboard</span>
+          <span className="landing-badge">Smart-Flow Dashboard</span>
           <h1>Monitor agricultural data, manage your equipment</h1>
           <p>
             Monitor sensor metrics from a single panel,

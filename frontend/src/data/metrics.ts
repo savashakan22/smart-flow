@@ -11,7 +11,7 @@ export const metrics: Metric[] = [
     max: 14,
     idealMin: 5.8,
     idealMax: 6.5,
-    statusText: "Optimal",
+    statusText: "Ideal",
     description:
       "pH",
     trend: "stable",
@@ -27,7 +27,7 @@ export const metrics: Metric[] = [
     max: 3.5,
     idealMin: 1.6,
     idealMax: 2.2,
-    statusText: "Balanced",
+    statusText: "Ideal",
     description:
       "EC",
     trend: "up",
@@ -59,7 +59,7 @@ export const metrics: Metric[] = [
     max: 50,
     idealMin: 22,
     idealMax: 28,
-    statusText: "Normal",
+    statusText: "Ideal",
     description:
       "Air Temperature",
     trend: "down",
@@ -75,7 +75,7 @@ export const metrics: Metric[] = [
     max: 100,
     idealMin: 55,
     idealMax: 70,
-    statusText: "Normal",
+    statusText: "Ideal",
     description:
       "Humidity",
     trend: "stable",
@@ -91,7 +91,7 @@ export const metrics: Metric[] = [
     max: 100,
     idealMin: 50,
     idealMax: 100,
-    statusText: "Normal",
+    statusText: "Ideal",
     description:
       "Water level",
     trend: "down",
