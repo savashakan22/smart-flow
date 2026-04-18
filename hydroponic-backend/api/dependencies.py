@@ -12,12 +12,10 @@ _initialized = False
 
 
 def _init_firebase():
-    global _initialized
-    if not _initialized:
+    if not firebase_admin._apps:
         settings = get_settings()
         cred = credentials.Certificate(settings.firebase_credentials_path)
         firebase_admin.initialize_app(cred)
-        _initialized = True
 
 
 async def get_current_user(

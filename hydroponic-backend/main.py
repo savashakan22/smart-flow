@@ -51,7 +51,7 @@ async def ping():
 
 
 @app.get("/devices")
-async def list_devices(uid: str = get_current_user):
+async def list_devices(uid: str = Depends(get_current_user)):
     firestore = get_firestore_service()
     devices = firestore.get_user_devices(uid)
     return {"devices": devices}
