@@ -1,5 +1,6 @@
 import type { Metric } from "../types/dashboard";
 import CircleMeter from "./CircleMeter";
+import { formatLastUpdated } from "../data/metrics";
 
 type MetricCardProps = {
   metric: Metric;
@@ -44,7 +45,7 @@ export default function MetricCard({
 
       <div className="metric-card__bottom">
         <span>{metric.statusText}</span>
-        <span>{metric.lastUpdated}</span>
+        <span>{formatLastUpdated(metric.lastUpdated)}</span>
       </div>
     </button>
   );
