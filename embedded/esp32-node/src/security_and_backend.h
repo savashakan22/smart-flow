@@ -346,6 +346,18 @@ class BackendClient {
 
   bool beginSecuritySession() { return sequences_.begin(); }
 
+  void settleAndDisconnect() {
+    if (!mqttClient_.connected()) {
+      return;
+    }
+
+    mqttClient_.loop();
+    delay(kMqttPublishDrainMs);
+    mqttClient_.loop();
+    mqttClient_.disconnect();
+    delay(100);
+  }
+
  private:
   WiFiClient wifiClient_;
   PubSubClient mqttClient_;

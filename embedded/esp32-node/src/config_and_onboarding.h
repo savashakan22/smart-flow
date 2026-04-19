@@ -73,6 +73,7 @@ class OnboardingPortal {
     char mqttUser[32];
     char mqttPass[32];
     char sleepSeconds[12];
+    char claimInfoHtml[192];
 
     copyString(config.mqttHost, mqttHost, sizeof(mqttHost));
     snprintf(mqttPort, sizeof(mqttPort), "%u", config.mqttPort);
@@ -83,7 +84,13 @@ class OnboardingPortal {
         sizeof(sleepSeconds),
         "%lu",
         static_cast<unsigned long>(config.sleepSeconds));
+    snprintf(
+        claimInfoHtml,
+        sizeof(claimInfoHtml),
+        "<div style='padding:10px 0;font-size:16px;'><strong>Claim code:</strong> %s</div>",
+        config.claimCode.c_str());
 
+    WiFiManagerParameter claimInfoParam(claimInfoHtml);
     WiFiManagerParameter hostParam("mqtt_host", "MQTT host", mqttHost, sizeof(mqttHost));
     WiFiManagerParameter portParam("mqtt_port", "MQTT port", mqttPort, sizeof(mqttPort));
     WiFiManagerParameter userParam(
@@ -93,6 +100,7 @@ class OnboardingPortal {
     WiFiManagerParameter sleepParam(
         "sleep_s", "Sleep seconds", sleepSeconds, sizeof(sleepSeconds));
 
+    wm.addParameter(&claimInfoParam);
     wm.addParameter(&hostParam);
     wm.addParameter(&portParam);
     wm.addParameter(&userParam);

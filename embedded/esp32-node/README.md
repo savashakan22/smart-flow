@@ -119,7 +119,12 @@ pio device monitor -b 115200
 
 ## First boot
 
-On first power-up, or when the BOOT button is held during startup, the node opens a captive portal named like `SmartFlow-1A2B3C`.
+On first power-up the node opens a captive portal named like `SmartFlow-1A2B3C`.
+
+After provisioning:
+
+- after normal boot, press `BOOT` within about 3 seconds: opens the captive portal without clearing saved settings
+- after normal boot, hold `BOOT` within that same window for about 2 seconds: clears saved Wi-Fi and custom config, then restarts into onboarding
 
 The portal collects:
 
@@ -128,6 +133,7 @@ The portal collects:
 - MQTT username
 - MQTT password
 - sleep interval
+- claim code display
 
 Wi-Fi credentials are handled by WiFiManager and custom fields are stored in `Preferences`.
 
@@ -135,7 +141,7 @@ Wi-Fi credentials are handled by WiFiManager and custom fields are stored in `Pr
 
 The node generates a deterministic claim code from the ESP32 MAC address. The backend stores that code when it receives the provisioning message. After that, the dashboard can use the existing `/devices/claim` endpoint.
 
-The current firmware does not show the claim code to the user directly. That means the product needs one explicit handoff path for onboarding.
+The captive portal now shows the claim code directly during onboarding. That makes local setup easier, but for a finished product you may still want a label or QR code on the device.
 
 Recommended options:
 

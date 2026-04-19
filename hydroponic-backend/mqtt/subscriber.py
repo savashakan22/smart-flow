@@ -49,6 +49,7 @@ class MQTTSubscriber:
     def _handle_status(self, device_id: str, payload: dict) -> None:
         firestore = get_firestore_service()
         firestore.update_device_status(device_id, payload)
+        logger.info("Updated status for device %s: %s", device_id, payload)
 
     def _parse_timestamp(self, raw_timestamp) -> datetime:
         if raw_timestamp is None:
@@ -76,6 +77,7 @@ class MQTTSubscriber:
             "water_temp": payload.get("water_temp"),
             "light": payload.get("light"),
         }
+        logger.info("Accepted telemetry for device %s: %s", device_id, telemetry_data)
 
         influx = get_influx_service()
         influx.write_telemetry(device_id, telemetry_data, timestamp)
