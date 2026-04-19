@@ -30,7 +30,38 @@ jobs:
           VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID
           VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
           EOF
-      - run: cd hydroponic-frontend && npm install && npm run build
+      - name: Debug frontend env injection
+        shell: bash
+        run: |
+          echo "Checking generated hydroponic-frontend/.env.production.local"
+          if [ ! -f hydroponic-frontend/.env.production.local ]; then
+            echo "Missing .env.production.local"
+            exit 1
+          fi
+
+          while IFS='=' read -r key value; do
+            [ -z "$key" ] && continue
+            value_length=${#value}
+            if [ "$value_length" -gt 12 ]; then
+              preview="${value:0:6}...${value: -4}"
+            else
+              preview="set"
+            fi
+            echo "$key length=$value_length preview=$preview"
+          done < hydroponic-frontend/.env.production.local
+      - name: Build frontend
+        run: cd hydroponic-frontend && npm install && npm run build
+      - name: Debug built output
+        shell: bash
+        run: |
+          echo "Listing built assets"
+          ls -la hydroponic-frontend/dist
+          echo "Searching built output for configured API base URL"
+          if [ -n "${{ vars.VITE_API_BASE_URL }}" ]; then
+            grep -R --fixed-strings "${{ vars.VITE_API_BASE_URL }}" hydroponic-frontend/dist || true
+          else
+            echo "VITE_API_BASE_URL is empty at workflow evaluation time"
+          fi
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
