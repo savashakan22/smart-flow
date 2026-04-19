@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -19,6 +20,12 @@ class Settings(BaseSettings):
 
     firebase_credentials_path: str = Field(
         default="firebase-credentials.json", alias="FIREBASE_CREDENTIALS_PATH"
+    )
+    firebase_credentials_json: Optional[str] = Field(
+        default=None, alias="FIREBASE_CREDENTIALS_JSON"
+    )
+    firebase_credentials_base64: Optional[str] = Field(
+        default=None, alias="FIREBASE_CREDENTIALS_BASE64"
     )
 
 
