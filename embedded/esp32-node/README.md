@@ -94,6 +94,29 @@ Before field use, you should calibrate:
 
 The MQTT and buffering logic can stay as-is while you tune those constants.
 
+## Mock telemetry mode
+
+For backend, MQTT, and encryption testing without physical sensors, the project includes a
+second PlatformIO environment:
+
+- `esp32dev`: normal firmware that reads real sensors
+- `esp32dev-mock`: test firmware that publishes plausible mock telemetry values
+
+The mock build keeps the same Wi-Fi, onboarding, MQTT, encryption, buffering, and sleep flow.
+Only the sensor readings are replaced with generated values, so it is useful for checking that:
+
+1. provisioning reaches the backend
+2. encrypted MQTT payloads can be decrypted
+3. telemetry appears in InfluxDB / Firestore
+
+Example commands:
+
+```powershell
+pio run -e esp32dev-mock
+pio run -e esp32dev-mock -t upload
+pio device monitor -b 115200
+```
+
 ## First boot
 
 On first power-up, or when the BOOT button is held during startup, the node opens a captive portal named like `SmartFlow-1A2B3C`.

@@ -14,6 +14,24 @@ namespace smartflow {
 
 class SensorSuite {
  public:
+#if defined(SMARTFLOW_USE_MOCK_SENSORS)
+  bool begin() {
+    Serial.println("Mock sensor mode enabled.");
+    return true;
+  }
+
+  bool read(SensorReadings& readings) {
+    const uint32_t entropy = esp_random();
+
+    readings.ec = 1.20f + static_cast<float>(entropy % 160) / 100.0f;
+    readings.airTemp = 19.0f + static_cast<float>((entropy >> 4) % 130) / 10.0f;
+    readings.humidity = 45.0f + static_cast<float>((entropy >> 9) % 400) / 10.0f;
+    readings.waterLevel = 35.0f + static_cast<float>((entropy >> 13) % 650) / 10.0f;
+    readings.waterTemp = 18.0f + static_cast<float>((entropy >> 18) % 100) / 10.0f;
+    readings.light = 150.0f + static_cast<float>((entropy >> 22) % 750);
+    return true;
+  }
+#else
   SensorSuite()
       : oneWire_(kOneWirePin),
         waterThermometer_(&oneWire_),
@@ -121,6 +139,7 @@ class SensorSuite {
     const float normalized = (raw - kLdrDarkRaw) / (kLdrBrightRaw - kLdrDarkRaw);
     return constrain(normalized * 1000.0f, 0.0f, 1000.0f);
   }
+#endif
 };
 
 class TelemetryBuffer {
