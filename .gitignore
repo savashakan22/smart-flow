@@ -2,7 +2,11 @@
 firebase-credentials.json
 agents/
 security/*.txt
+.agents/
+.firebase/
 
 # Python cache
 __pycache__/
 *.py[cod]
+
+skills-lock.json
