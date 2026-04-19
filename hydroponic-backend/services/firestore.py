@@ -1,10 +1,10 @@
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import firestore
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from google.cloud.firestore_v1.base_query import FieldFilter
 
-from core.config import get_settings
+from core.firebase_credentials import load_firebase_credentials
 
 
 class FirestoreService:
@@ -20,9 +20,8 @@ class FirestoreService:
         if self._initialized:
             return
 
-        settings = get_settings()
         if not firebase_admin._apps:
-            cred = credentials.Certificate(settings.firebase_credentials_path)
+            cred = load_firebase_credentials()
             firebase_admin.initialize_app(cred)
         self._db = firestore.client()
         self._initialized = True

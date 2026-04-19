@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from api.alerts import router as alerts_router
+from core.config import get_cors_allowed_origins
 from api.sensors import router as sensors_router
 from api.dependencies import get_current_user
 from services.firestore import get_firestore_service
@@ -34,10 +35,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Smart Hydroponic API", lifespan=lifespan)
+cors_allowed_origins = get_cors_allowed_origins()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
