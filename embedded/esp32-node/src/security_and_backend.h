@@ -257,7 +257,7 @@ class BackendClient {
 
     if (WiFi.status() == WL_CONNECTED) {
       configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-      delay(250);
+      waitForClockSync();
     }
     return WiFi.status() == WL_CONNECTED;
   }
@@ -288,7 +288,10 @@ class BackendClient {
       String& protectedPayload) {
     DynamicJsonDocument doc(384);
     doc["device_id"] = config_.deviceId;
-    doc["timestamp"] = isoTimestamp();
+    const String timestamp = isoTimestamp();
+    if (timestamp.length() > 0) {
+      doc["timestamp"] = timestamp;
+    }
     doc["ec"] = round2(readings.ec);
     doc["air_temp"] = round2(readings.airTemp);
     doc["humidity"] = round2(readings.humidity);
@@ -346,6 +349,18 @@ class BackendClient {
 
   bool beginSecuritySession() { return sequences_.begin(); }
 
+  void settleAndDisconnect() {
+    if (!mqttClient_.connected()) {
+      return;
+    }
+
+    mqttClient_.loop();
+    delay(kMqttPublishDrainMs);
+    mqttClient_.loop();
+    mqttClient_.disconnect();
+    delay(100);
+  }
+
  private:
   WiFiClient wifiClient_;
   PubSubClient mqttClient_;
@@ -361,10 +376,22 @@ class BackendClient {
     return crypto_.protect("status", sequences_.nextStatusSequence(), doc, protectedPayload);
   }
 
+  bool isClockSynchronized() {
+    const time_t now = time(nullptr);
+    return now >= kMinimumValidUnixTime;
+  }
+
+  void waitForClockSync() {
+    const uint32_t deadline = millis() + kClockSyncTimeoutMs;
+    while (!isClockSynchronized() && millis() < deadline) {
+      delay(250);
+    }
+  }
+
   String isoTimestamp() {
     time_t now = time(nullptr);
-    if (now < 0) {
-      now = 0;
+    if (now < kMinimumValidUnixTime) {
+      return String();
     }
 
     struct tm utcTime {};

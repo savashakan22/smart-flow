@@ -94,9 +94,37 @@ Before field use, you should calibrate:
 
 The MQTT and buffering logic can stay as-is while you tune those constants.
 
+## Mock telemetry mode
+
+For backend, MQTT, and encryption testing without physical sensors, the project includes a
+second PlatformIO environment:
+
+- `esp32dev`: normal firmware that reads real sensors
+- `esp32dev-mock`: test firmware that publishes plausible mock telemetry values
+
+The mock build keeps the same Wi-Fi, onboarding, MQTT, encryption, buffering, and sleep flow.
+Only the sensor readings are replaced with generated values, so it is useful for checking that:
+
+1. provisioning reaches the backend
+2. encrypted MQTT payloads can be decrypted
+3. telemetry appears in InfluxDB / Firestore
+
+Example commands:
+
+```powershell
+pio run -e esp32dev-mock
+pio run -e esp32dev-mock -t upload
+pio device monitor -b 115200
+```
+
 ## First boot
 
-On first power-up, or when the BOOT button is held during startup, the node opens a captive portal named like `SmartFlow-1A2B3C`.
+On first power-up the node opens a captive portal named like `SmartFlow-1A2B3C`.
+
+After provisioning:
+
+- after normal boot, press `BOOT` within about 3 seconds: opens the captive portal without clearing saved settings
+- after normal boot, hold `BOOT` within that same window for about 2 seconds: clears saved Wi-Fi and custom config, then restarts into onboarding
 
 The portal collects:
 
@@ -105,6 +133,7 @@ The portal collects:
 - MQTT username
 - MQTT password
 - sleep interval
+- claim code display
 
 Wi-Fi credentials are handled by WiFiManager and custom fields are stored in `Preferences`.
 
@@ -112,7 +141,7 @@ Wi-Fi credentials are handled by WiFiManager and custom fields are stored in `Pr
 
 The node generates a deterministic claim code from the ESP32 MAC address. The backend stores that code when it receives the provisioning message. After that, the dashboard can use the existing `/devices/claim` endpoint.
 
-The current firmware does not show the claim code to the user directly. That means the product needs one explicit handoff path for onboarding.
+The captive portal now shows the claim code directly during onboarding. That makes local setup easier, but for a finished product you may still want a label or QR code on the device.
 
 Recommended options:
 

@@ -11,6 +11,7 @@ from services.firestore import get_firestore_service
 from services.influx import get_influx_service
 
 logger = logging.getLogger(__name__)
+MIN_ACCEPTABLE_TELEMETRY_TIME = datetime(2024, 1, 1, tzinfo=timezone.utc)
 
 
 class MQTTSubscriber:
@@ -49,19 +50,31 @@ class MQTTSubscriber:
     def _handle_status(self, device_id: str, payload: dict) -> None:
         firestore = get_firestore_service()
         firestore.update_device_status(device_id, payload)
+        logger.info("Updated status for device %s: %s", device_id, payload)
 
     def _parse_timestamp(self, raw_timestamp) -> datetime:
+        def normalize(candidate: datetime) -> datetime:
+            if candidate.tzinfo is None:
+                candidate = candidate.replace(tzinfo=timezone.utc)
+            if candidate < MIN_ACCEPTABLE_TELEMETRY_TIME:
+                logger.warning(
+                    "Received stale/invalid telemetry timestamp %s, using server time instead",
+                    candidate.isoformat(),
+                )
+                return datetime.now(timezone.utc)
+            return candidate
+
         if raw_timestamp is None:
             return datetime.now(timezone.utc)
 
         if isinstance(raw_timestamp, (int, float)):
-            return datetime.fromtimestamp(raw_timestamp, timezone.utc)
+            return normalize(datetime.fromtimestamp(raw_timestamp, timezone.utc))
 
         if isinstance(raw_timestamp, str):
             normalized = raw_timestamp.strip()
             if normalized.isdigit():
-                return datetime.fromtimestamp(int(normalized), timezone.utc)
-            return datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+                return normalize(datetime.fromtimestamp(int(normalized), timezone.utc))
+            return normalize(datetime.fromisoformat(normalized.replace("Z", "+00:00")))
 
         return datetime.now(timezone.utc)
 
@@ -76,6 +89,7 @@ class MQTTSubscriber:
             "water_temp": payload.get("water_temp"),
             "light": payload.get("light"),
         }
+        logger.info("Accepted telemetry for device %s: %s", device_id, telemetry_data)
 
         influx = get_influx_service()
         influx.write_telemetry(device_id, telemetry_data, timestamp)

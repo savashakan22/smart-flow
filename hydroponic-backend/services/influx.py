@@ -28,7 +28,7 @@ class InfluxService:
     def initialize(self) -> None:
         settings = get_settings()
         self._client = InfluxDBClient3(
-            host="eu-central-1-1.aws.cloud2.influxdata.com",
+            host=settings.influx_url,
             database=settings.influx_bucket,
             token=settings.influxdb_token,
         )
