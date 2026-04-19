@@ -27,8 +27,21 @@ class Settings(BaseSettings):
     firebase_credentials_base64: Optional[str] = Field(
         default=None, alias="FIREBASE_CREDENTIALS_BASE64"
     )
+    cors_allowed_origins: str = Field(
+        default="http://localhost:5173,https://smart-flow-edc55.web.app",
+        alias="CORS_ALLOWED_ORIGINS",
+    )
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def get_cors_allowed_origins() -> list[str]:
+    settings = get_settings()
+    return [
+        origin.strip()
+        for origin in settings.cors_allowed_origins.split(",")
+        if origin.strip()
+    ]
