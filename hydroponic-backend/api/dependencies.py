@@ -1,10 +1,9 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import firebase_admin
-from firebase_admin import credentials
 from firebase_admin import auth as firebase_auth
 
-from core.config import get_settings
+from core.firebase_credentials import load_firebase_credentials
 
 security = HTTPBearer()
 
@@ -13,8 +12,7 @@ _initialized = False
 
 def _init_firebase():
     if not firebase_admin._apps:
-        settings = get_settings()
-        cred = credentials.Certificate(settings.firebase_credentials_path)
+        cred = load_firebase_credentials()
         firebase_admin.initialize_app(cred)
 
 

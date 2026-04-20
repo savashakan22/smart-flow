@@ -25,21 +25,14 @@ class TestDeviceEndpoints:
     def setup(self):
         self.mock_firestore = MagicMock()
 
-        with patch(
-            "services.firestore.get_firestore_service", return_value=self.mock_firestore
-        ):
+        with patch("main.get_firestore_service", return_value=self.mock_firestore):
             from main import app
 
             self.client = TestClient(app)
 
             self.client.headers["Authorization"] = "Bearer valid_token"
 
-            original_dependency = app.dependency_overrides.get(
-                "api.dependencies.get_current_user"
-            )
-
             from api.dependencies import get_current_user
-            from fastapi.security import HTTPBearer
 
             async def mock_auth():
                 return "test_user_123"
@@ -48,10 +41,7 @@ class TestDeviceEndpoints:
 
             yield
 
-            if original_dependency:
-                app.dependency_overrides[get_current_user] = original_dependency
-            else:
-                app.dependency_overrides.pop(get_current_user, None)
+            app.dependency_overrides.pop(get_current_user, None)
 
     def test_list_devices(self):
         self.mock_firestore.get_user_devices.return_value = ["esp32_001", "esp32_002"]
@@ -78,6 +68,32 @@ class TestDeviceEndpoints:
         assert response.status_code == 200
         assert response.json()["success"] is False
 
+    def test_unclaim_device_success_and_reopen_claim(self):
+        self.mock_firestore.verify_device_ownership.return_value = True
+        self.mock_firestore.get_device_users.return_value = []
+        self.mock_firestore.reopen_claim.return_value = True
+
+        response = self.client.post("/devices/esp32_001/unclaim")
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "success": True,
+            "device_id": "esp32_001",
+            "claim_reopened": True,
+        }
+        self.mock_firestore.remove_device_from_user.assert_called_once_with(
+            "test_user_123", "esp32_001"
+        )
+        self.mock_firestore.reopen_claim.assert_called_once_with("esp32_001")
+
+    def test_unclaim_device_forbidden_when_not_owned(self):
+        self.mock_firestore.verify_device_ownership.return_value = False
+
+        response = self.client.post("/devices/esp32_001/unclaim")
+
+        assert response.status_code == 403
+        self.mock_firestore.remove_device_from_user.assert_not_called()
+
 
 class TestSensorEndpoints:
     @pytest.fixture(autouse=True)
@@ -86,11 +102,8 @@ class TestSensorEndpoints:
         self.mock_influx = MagicMock()
 
         with (
-            patch(
-                "services.firestore.get_firestore_service",
-                return_value=self.mock_firestore,
-            ),
-            patch("services.influx.get_influx_service", return_value=self.mock_influx),
+            patch("api.sensors.get_firestore_service", return_value=self.mock_firestore),
+            patch("api.sensors.get_influx_service", return_value=self.mock_influx),
         ):
             from main import app
 

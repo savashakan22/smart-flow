@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site": "smart-flow-edc55",
+    "public": "hydroponic-frontend/dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

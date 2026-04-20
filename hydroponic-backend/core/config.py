@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,14 +13,35 @@ class Settings(BaseSettings):
     influx_url: str = Field(alias="INFLUX_URL")
 
     mqtt_ip: str = Field(alias="MQTT_IP")
+    mqtt_port: int = Field(default=1883, alias="MQTT_PORT")
     mqtt_username: str = Field(alias="MQTT_USERNAME")
     mqtt_password: str = Field(alias="MQTT_PASSWORD")
+    mqtt_crypto_master_key_hex: str = Field(alias="MQTT_CRYPTO_MASTER_KEY_HEX")
 
     firebase_credentials_path: str = Field(
         default="firebase-credentials.json", alias="FIREBASE_CREDENTIALS_PATH"
+    )
+    firebase_credentials_json: Optional[str] = Field(
+        default=None, alias="FIREBASE_CREDENTIALS_JSON"
+    )
+    firebase_credentials_base64: Optional[str] = Field(
+        default=None, alias="FIREBASE_CREDENTIALS_BASE64"
+    )
+    cors_allowed_origins: str = Field(
+        default="http://localhost:5173,https://smart-flow-edc55.web.app",
+        alias="CORS_ALLOWED_ORIGINS",
     )
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def get_cors_allowed_origins() -> list[str]:
+    settings = get_settings()
+    return [
+        origin.strip()
+        for origin in settings.cors_allowed_origins.split(",")
+        if origin.strip()
+    ]
