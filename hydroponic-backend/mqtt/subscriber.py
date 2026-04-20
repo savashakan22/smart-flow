@@ -12,6 +12,7 @@ from services.influx import get_influx_service
 
 logger = logging.getLogger(__name__)
 MIN_ACCEPTABLE_TELEMETRY_TIME = datetime(2024, 1, 1, tzinfo=timezone.utc)
+TOPIC_PREFIX = "sf"
 
 
 class MQTTSubscriber:
@@ -30,9 +31,9 @@ class MQTTSubscriber:
         if reason_code == 0:
             logger.info("Connected to MQTT broker")
             self._connected = True
-            client.subscribe("telemetry/#")
-            client.subscribe("provisioning/#")
-            client.subscribe("status/#")
+            client.subscribe(f"{TOPIC_PREFIX}/telemetry/#")
+            client.subscribe(f"{TOPIC_PREFIX}/provisioning/#")
+            client.subscribe(f"{TOPIC_PREFIX}/status/#")
         else:
             logger.error(f"MQTT connection failed with code {reason_code}")
 
@@ -149,12 +150,16 @@ class MQTTSubscriber:
     def _on_message(self, client, userdata, msg):
         try:
             topic_parts = msg.topic.split("/")
-            if len(topic_parts) < 2:
+            if len(topic_parts) < 3:
                 logger.warning("Unexpected topic format: %s", msg.topic)
                 return
 
-            namespace = topic_parts[0]
-            device_id = topic_parts[1]
+            if topic_parts[0] != TOPIC_PREFIX:
+                logger.warning("Unexpected topic prefix: %s", msg.topic)
+                return
+
+            namespace = topic_parts[1]
+            device_id = topic_parts[2]
             if namespace not in {"telemetry", "provisioning", "status"}:
                 logger.warning("Unexpected topic namespace: %s", msg.topic)
                 return

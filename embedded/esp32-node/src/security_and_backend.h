@@ -272,7 +272,8 @@ class BackendClient {
       return false;
     }
 
-    const String statusTopic = "status/" + config_.deviceId;
+    const String statusTopic =
+        String(kTopicPrefix) + "/status/" + config_.deviceId;
     return mqttClient_.connect(
         config_.deviceId.c_str(),
         config_.mqttUser.c_str(),
@@ -317,7 +318,7 @@ class BackendClient {
     }
 
     return mqttClient_.publish(
-        ("provisioning/" + config_.deviceId).c_str(),
+        (String(kTopicPrefix) + "/provisioning/" + config_.deviceId).c_str(),
         protectedPayload.c_str(),
         true);
   }
@@ -329,7 +330,9 @@ class BackendClient {
     }
 
     return mqttClient_.publish(
-        ("status/" + config_.deviceId).c_str(), protectedPayload.c_str(), true);
+        (String(kTopicPrefix) + "/status/" + config_.deviceId).c_str(),
+        protectedPayload.c_str(),
+        true);
   }
 
   bool publishTelemetry(const SensorReadings& readings) {
@@ -339,12 +342,16 @@ class BackendClient {
     }
 
     return mqttClient_.publish(
-        ("telemetry/" + config_.deviceId).c_str(), protectedPayload.c_str(), false);
+        (String(kTopicPrefix) + "/telemetry/" + config_.deviceId).c_str(),
+        protectedPayload.c_str(),
+        false);
   }
 
   bool publishBufferedPayload(const String& payload) {
     return mqttClient_.publish(
-        ("telemetry/" + config_.deviceId).c_str(), payload.c_str(), false);
+        (String(kTopicPrefix) + "/telemetry/" + config_.deviceId).c_str(),
+        payload.c_str(),
+        false);
   }
 
   bool beginSecuritySession() { return sequences_.begin(); }

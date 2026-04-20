@@ -10,6 +10,7 @@ namespace smartflow {
 #endif
 
 constexpr char kPrefsNamespace[] = "smartflow";
+constexpr char kTopicPrefix[] = "sf";
 constexpr char kBufferFile[] = "/telemetry.json";
 constexpr char kCryptoMasterKeyHex[] = SMARTFLOW_CRYPTO_MASTER_KEY_HEX;
 constexpr size_t kMaxBufferedReadings = 48;

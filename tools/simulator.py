@@ -14,6 +14,8 @@ from typing import List, Optional
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+TOPIC_PREFIX = "sf"
+
 
 class VirtualDevice:
     def __init__(
@@ -121,14 +123,14 @@ class VirtualDevice:
             client = self._connect_mqtt()
             if not self._provisioning_sent:
                 client.publish(
-                    f"provisioning/{self.device_id}",
+                    f"{TOPIC_PREFIX}/provisioning/{self.device_id}",
                     self._protect_payload(
                         "provisioning", self.generate_provisioning_payload()
                     ),
                 )
                 self._provisioning_sent = True
             payload = self.generate_reading()
-            topic = f"telemetry/{self.device_id}"
+            topic = f"{TOPIC_PREFIX}/telemetry/{self.device_id}"
             client.publish(topic, self._protect_payload("telemetry", payload))
             client.disconnect()
             print(f"[{self.device_id}] Published: {payload}")

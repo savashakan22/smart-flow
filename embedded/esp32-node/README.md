@@ -39,9 +39,9 @@ These are just compile-time defaults. If your wiring is different, update the co
 
 The firmware publishes to these topics:
 
-- `provisioning/<device_id>`: sent after onboarding and on boot so the backend can register the node and refresh the claim code
-- `telemetry/<device_id>`: sensor payload compatible with `hydroponic-backend/mqtt/subscriber.py`
-- `status/<device_id>`: health and availability information
+- `sf/provisioning/<device_id>`: sent after onboarding and on boot so the backend can register the node and refresh the claim code
+- `sf/telemetry/<device_id>`: sensor payload compatible with `hydroponic-backend/mqtt/subscriber.py`
+- `sf/status/<device_id>`: health and availability information
 
 All three payload types are wrapped in an encrypted envelope:
 
