@@ -1,9 +1,13 @@
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import CallbackAPIVersion
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import json
 import time
 import random
 import argparse
+import hashlib
+import hmac
+import os
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -29,6 +33,13 @@ class VirtualDevice:
         self.firebase_cred_path = firebase_cred_path
         self._mqtt_client: Optional[mqtt.Client] = None
         self._firebase_initialized = False
+        self._crypto_master_key_hex = os.getenv("MQTT_CRYPTO_MASTER_KEY_HEX", "")
+        self._session_prefix = int(time.time())
+        self._sequence_counters = {
+            "provisioning": 0,
+            "telemetry": 0,
+        }
+        self._provisioning_sent = False
 
     def _init_firebase(self):
         if self._firebase_initialized:
@@ -50,6 +61,44 @@ class VirtualDevice:
         client.connect(self.mqtt_ip, self.mqtt_port, 60)
         return client
 
+    def _next_sequence(self, namespace: str) -> int:
+        self._sequence_counters[namespace] += 1
+        return (self._session_prefix << 16) | self._sequence_counters[namespace]
+
+    def _derive_topic_key(self) -> bytes:
+        master_key = bytes.fromhex(self._crypto_master_key_hex)
+        return hmac.new(
+            master_key,
+            self.device_id.encode("utf-8"),
+            hashlib.sha256,
+        ).digest()
+
+    def _build_nonce(self, namespace: str, sequence: int) -> bytes:
+        namespace_codes = {
+            "telemetry": 1,
+            "provisioning": 2,
+        }
+        namespace_code = namespace_codes[namespace]
+        return namespace_code.to_bytes(4, "big") + sequence.to_bytes(8, "big")
+
+    def _protect_payload(self, namespace: str, payload: dict) -> str:
+        sequence = self._next_sequence(namespace)
+        nonce = self._build_nonce(namespace, sequence)
+        plaintext = json.dumps(payload).encode("utf-8")
+        aad = f"{namespace}:{self.device_id}:{sequence}".encode("utf-8")
+        ciphertext = AESGCM(self._derive_topic_key()).encrypt(
+            nonce,
+            plaintext,
+            aad,
+        )
+        return json.dumps(
+            {
+                "seq": sequence,
+                "ciphertext": ciphertext[:-16].hex(),
+                "tag": ciphertext[-16:].hex(),
+            }
+        )
+
     def generate_reading(self) -> dict:
         return {
             "ec": round(random.uniform(1.0, 2.5), 2),
@@ -61,12 +110,26 @@ class VirtualDevice:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
+    def generate_provisioning_payload(self) -> dict:
+        return {
+            "device_id": self.device_id,
+            "claim_code": f"SIM_CLAIM_{self.device_id}",
+        }
+
     def publish(self):
         try:
             client = self._connect_mqtt()
+            if not self._provisioning_sent:
+                client.publish(
+                    f"provisioning/{self.device_id}",
+                    self._protect_payload(
+                        "provisioning", self.generate_provisioning_payload()
+                    ),
+                )
+                self._provisioning_sent = True
             payload = self.generate_reading()
             topic = f"telemetry/{self.device_id}"
-            client.publish(topic, json.dumps(payload))
+            client.publish(topic, self._protect_payload("telemetry", payload))
             client.disconnect()
             print(f"[{self.device_id}] Published: {payload}")
             return True
@@ -171,8 +234,6 @@ def load_env_defaults():
         load_dotenv()
     except ImportError:
         pass
-
-    import os
 
     return {
         "mqtt_ip": os.getenv("MQTT_IP"),

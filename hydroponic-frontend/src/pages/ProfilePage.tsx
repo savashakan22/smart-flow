@@ -14,6 +14,7 @@ type Props = {
   user: User;
   devices: Device[];
   onClaimDevice: (claimCode: string) => Promise<void>;
+  onUnclaimDevice: (deviceId: string) => Promise<void>;
   onLogout: () => Promise<void>;
   onSaveProfile: (profile: User) => Promise<void>;
   isAuthenticated: boolean;
@@ -27,6 +28,7 @@ export default function ProfilePage({
   user,
   devices,
   onClaimDevice,
+  onUnclaimDevice,
   onLogout,
   onSaveProfile,
   isAuthenticated,
@@ -44,6 +46,7 @@ export default function ProfilePage({
 
   const [claimCode, setClaimCode] = useState("");
   const [deviceError, setDeviceError] = useState("");
+  const [deviceActionError, setDeviceActionError] = useState("");
 
   const initials = useMemo(() => {
     return user.fullName
@@ -90,6 +93,22 @@ export default function ProfilePage({
     setClaimCode("");
     setDeviceError("");
     setIsAddDeviceModalOpen(false);
+  }
+
+  async function handleUnclaimDeviceSubmit(deviceId: string) {
+    const confirmed = window.confirm("Remove this device from your account?");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeviceActionError("");
+      await onUnclaimDevice(deviceId);
+    } catch (unclaimError) {
+      setDeviceActionError(
+        unclaimError instanceof Error ? unclaimError.message : "Unable to unclaim device"
+      );
+    }
   }
 
   async function handleLogout() {
@@ -238,12 +257,20 @@ export default function ProfilePage({
                 </div>
 
                 <div className="device-list">
+                  {deviceActionError && <p className="auth-error">{deviceActionError}</p>}
                   {devices.map((device) => (
                     <div key={device.id} className="device-item">
                       <div>
                         <h4>{device.name}</h4>
-                        <p>{device.serial} • {device.status}</p>
+                        <p>{device.serial} - {device.status}</p>
                       </div>
+                      <button
+                        type="button"
+                        className="profile-btn profile-btn--ghost"
+                        onClick={() => handleUnclaimDeviceSubmit(device.id)}
+                      >
+                        Unclaim
+                      </button>
                     </div>
                   ))}
                 </div>
