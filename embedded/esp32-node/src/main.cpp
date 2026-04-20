@@ -41,6 +41,33 @@ void logReadings(const SensorReadings& readings, const char* label) {
       readings.light);
 }
 
+const char* mqttStateLabel(int state) {
+  switch (state) {
+    case -4:
+      return "MQTT_CONNECTION_TIMEOUT";
+    case -3:
+      return "MQTT_CONNECTION_LOST";
+    case -2:
+      return "MQTT_CONNECT_FAILED";
+    case -1:
+      return "MQTT_DISCONNECTED";
+    case 0:
+      return "MQTT_CONNECTED";
+    case 1:
+      return "MQTT_CONNECT_BAD_PROTOCOL";
+    case 2:
+      return "MQTT_CONNECT_BAD_CLIENT_ID";
+    case 3:
+      return "MQTT_CONNECT_UNAVAILABLE";
+    case 4:
+      return "MQTT_CONNECT_BAD_CREDENTIALS";
+    case 5:
+      return "MQTT_CONNECT_UNAUTHORIZED";
+    default:
+      return "MQTT_STATE_UNKNOWN";
+  }
+}
+
 BootButtonAction detectBootButtonAction() {
   pinMode(kFactoryResetPin, INPUT_PULLUP);
   const uint32_t windowStart = millis();
@@ -134,8 +161,26 @@ void setup() {
     goToDeepSleep(config.sleepSeconds);
   }
 
-  if (!backendClient.connectWifi() || !backendClient.connectMqtt()) {
-    Serial.println("Network or MQTT connection failed.");
+  if (!backendClient.connectWifi()) {
+    Serial.printf("Wi-Fi connection failed. status=%d\n", static_cast<int>(WiFi.status()));
+    SensorReadings readings;
+    if (sensorSuite.read(readings)) {
+      logReadings(readings, "Buffering offline telemetry:");
+      bufferCurrentReading(readings);
+    }
+    goToDeepSleep(config.sleepSeconds);
+  }
+
+  if (!backendClient.connectMqtt()) {
+    const int mqttState = backendClient.mqttState();
+    Serial.printf(
+        "MQTT connection failed. state=%d (%s)\n",
+        mqttState,
+        mqttStateLabel(mqttState));
+    Serial.printf(
+        "MQTT auth presence: username=%s password=%s\n",
+        config.mqttUser.length() > 0 ? "set" : "empty",
+        config.mqttPassword.length() > 0 ? "set" : "empty");
     SensorReadings readings;
     if (sensorSuite.read(readings)) {
       logReadings(readings, "Buffering offline telemetry:");

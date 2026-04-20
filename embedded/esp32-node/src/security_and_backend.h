@@ -349,6 +349,8 @@ class BackendClient {
 
   bool beginSecuritySession() { return sequences_.begin(); }
 
+  int mqttState() { return mqttClient_.state(); }
+
   void settleAndDisconnect() {
     if (!mqttClient_.connected()) {
       return;

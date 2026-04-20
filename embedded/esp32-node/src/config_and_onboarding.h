@@ -83,8 +83,8 @@ class OnboardingPortal {
 
     char mqttHost[64];
     char mqttPort[8];
-    char mqttUser[32];
-    char mqttPass[32];
+    char mqttUser[64];
+    char mqttPass[128];
     char sleepSeconds[12];
     char claimInfoHtml[192];
 
