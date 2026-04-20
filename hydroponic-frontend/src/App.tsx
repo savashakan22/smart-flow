@@ -13,7 +13,7 @@ import ProfilePage from "./pages/ProfilePage";
 import DeviceSelectionPage from "./pages/DeviceSelectionPage";
 import { devices as initialDevices, mapDeviceIdToCard, type Device } from "./data/devices";
 import { auth } from "./lib/firebase";
-import { claimDevice, fetchDevices } from "./services/api";
+import { claimDevice, fetchDevices, unclaimDevice } from "./services/api";
 
 type UserProfile = {
   fullName: string;
@@ -126,6 +126,19 @@ export default function App() {
     await loadDevices(token);
   }
 
+  async function handleUnclaimDevice(deviceId: string) {
+    if (!token) {
+      throw new Error("Not authenticated");
+    }
+
+    const response = await unclaimDevice(deviceId, token);
+    if (!response.success) {
+      throw new Error(response.detail ?? "Unable to unclaim device");
+    }
+
+    await loadDevices(token);
+  }
+
   return (
     <Routes>
       <Route
@@ -218,6 +231,7 @@ export default function App() {
               user={user}
               devices={devices}
               onClaimDevice={handleClaimDevice}
+              onUnclaimDevice={handleUnclaimDevice}
               onLogout={authActions.logout}
               onSaveProfile={authActions.updateUser}
               isAuthenticated={isAuthenticated}

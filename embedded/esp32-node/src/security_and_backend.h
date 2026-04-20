@@ -272,7 +272,7 @@ class BackendClient {
       return false;
     }
 
-    const String statusTopic = "status/" + config_.deviceId;
+    const String statusTopic = topicFor("status");
     return mqttClient_.connect(
         config_.deviceId.c_str(),
         config_.mqttUser.c_str(),
@@ -317,7 +317,7 @@ class BackendClient {
     }
 
     return mqttClient_.publish(
-        ("provisioning/" + config_.deviceId).c_str(),
+        topicFor("provisioning").c_str(),
         protectedPayload.c_str(),
         true);
   }
@@ -329,7 +329,7 @@ class BackendClient {
     }
 
     return mqttClient_.publish(
-        ("status/" + config_.deviceId).c_str(), protectedPayload.c_str(), true);
+        topicFor("status").c_str(), protectedPayload.c_str(), true);
   }
 
   bool publishTelemetry(const SensorReadings& readings) {
@@ -339,12 +339,12 @@ class BackendClient {
     }
 
     return mqttClient_.publish(
-        ("telemetry/" + config_.deviceId).c_str(), protectedPayload.c_str(), false);
+        topicFor("telemetry").c_str(), protectedPayload.c_str(), false);
   }
 
   bool publishBufferedPayload(const String& payload) {
     return mqttClient_.publish(
-        ("telemetry/" + config_.deviceId).c_str(), payload.c_str(), false);
+        topicFor("telemetry").c_str(), payload.c_str(), false);
   }
 
   bool beginSecuritySession() { return sequences_.begin(); }
@@ -374,6 +374,10 @@ class BackendClient {
     doc["online"] = online;
 
     return crypto_.protect("status", sequences_.nextStatusSequence(), doc, protectedPayload);
+  }
+
+  String topicFor(const char* messageType) {
+    return String(kMqttTopicGroup) + "/" + messageType + "/" + config_.deviceId;
   }
 
   bool isClockSynchronized() {

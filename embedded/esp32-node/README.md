@@ -39,9 +39,9 @@ These are just compile-time defaults. If your wiring is different, update the co
 
 The firmware publishes to these topics:
 
-- `provisioning/<device_id>`: sent after onboarding and on boot so the backend can register the node and refresh the claim code
-- `telemetry/<device_id>`: sensor payload compatible with `hydroponic-backend/mqtt/subscriber.py`
-- `status/<device_id>`: health and availability information
+- `group3/provisioning/<device_id>`: sent on the first successful boot and after each captive portal save so the backend can register or refresh the claim code
+- `group3/telemetry/<device_id>`: sensor payload compatible with `hydroponic-backend/mqtt/subscriber.py`
+- `group3/status/<device_id>`: health and availability information
 
 All three payload types are wrapped in an encrypted envelope:
 
@@ -140,6 +140,13 @@ Wi-Fi credentials are handled by WiFiManager and custom fields are stored in `Pr
 ## Claim flow
 
 The node generates a deterministic claim code from the ESP32 MAC address. The backend stores that code when it receives the provisioning message. After that, the dashboard can use the existing `/devices/claim` endpoint.
+
+Provisioning is not sent on every wake cycle anymore. The regular MQTT flow is:
+
+1. optional provisioning if the device is new or portal settings were just saved
+2. online status
+3. telemetry
+4. offline status
 
 The captive portal now shows the claim code directly during onboarding. That makes local setup easier, but for a finished product you may still want a label or QR code on the device.
 

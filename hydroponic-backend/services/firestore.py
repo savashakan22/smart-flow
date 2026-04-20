@@ -45,6 +45,10 @@ class FirestoreService:
         user_ref = self.db.collection("users").document(firebase_uid)
         user_ref.set({"devices": firestore.ArrayUnion([device_id])}, merge=True)
 
+    def remove_device_from_user(self, firebase_uid: str, device_id: str) -> None:
+        user_ref = self.db.collection("users").document(firebase_uid)
+        user_ref.set({"devices": firestore.ArrayRemove([device_id])}, merge=True)
+
     def verify_device_ownership(self, firebase_uid: str, device_id: str) -> bool:
         devices = self.get_user_devices(firebase_uid)
         return device_id in devices
@@ -85,6 +89,18 @@ class FirestoreService:
             },
             merge=True,
         )
+
+    def reopen_claim(self, device_id: str) -> bool:
+        device_doc = self.db.collection("devices").document(device_id).get()
+        if not device_doc.exists:
+            return False
+
+        claim_code = (device_doc.to_dict() or {}).get("claim_code")
+        if not claim_code:
+            return False
+
+        self.create_or_refresh_claim(device_id, claim_code)
+        return True
 
     def update_device_status(self, device_id: str, payload: Dict) -> None:
         self.db.collection("devices").document(device_id).set(

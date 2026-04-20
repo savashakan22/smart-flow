@@ -12,6 +12,7 @@ namespace smartflow {
 constexpr char kPrefsNamespace[] = "smartflow";
 constexpr char kBufferFile[] = "/telemetry.json";
 constexpr char kCryptoMasterKeyHex[] = SMARTFLOW_CRYPTO_MASTER_KEY_HEX;
+constexpr char kMqttTopicGroup[] = "group3";
 constexpr size_t kMaxBufferedReadings = 48;
 constexpr size_t kMasterKeyLength = 32;
 constexpr size_t kTagLength = 16;
@@ -48,6 +49,7 @@ struct DeviceConfig {
   String mqttUser;
   String mqttPassword;
   uint32_t sleepSeconds = kDefaultSleepSeconds;
+  bool provisioningPending = true;
 
   bool isProvisioned() const { return mqttHost.length() > 0; }
 };

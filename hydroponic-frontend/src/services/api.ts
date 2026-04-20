@@ -71,6 +71,21 @@ export async function claimDevice(claimCode: string, token: string) {
   );
 }
 
+export async function unclaimDevice(deviceId: string, token: string) {
+  return apiRequest<{
+    success: boolean;
+    detail?: string;
+    device_id?: string;
+    claim_reopened?: boolean;
+  }>(
+    `/devices/${encodeURIComponent(deviceId)}/unclaim`,
+    {
+      method: "POST",
+    },
+    token
+  );
+}
+
 export async function fetchLatestReading(deviceId: string, token: string) {
   return apiRequest<LatestReadingResponse>(`/sensors/${encodeURIComponent(deviceId)}`, {}, token);
 }

@@ -25,6 +25,7 @@ class ConfigStore {
     config.mqttUser = prefs.getString("mqtt_user", "");
     config.mqttPassword = prefs.getString("mqtt_pass", "");
     config.sleepSeconds = prefs.getUInt("sleep_s", kDefaultSleepSeconds);
+    config.provisioningPending = prefs.getBool("prov_pending", true);
     prefs.end();
     return true;
   }
@@ -42,6 +43,18 @@ class ConfigStore {
     prefs.putString("mqtt_user", config.mqttUser);
     prefs.putString("mqtt_pass", config.mqttPassword);
     prefs.putUInt("sleep_s", config.sleepSeconds);
+    prefs.putBool("prov_pending", config.provisioningPending);
+    prefs.end();
+    return true;
+  }
+
+  bool setProvisioningPending(bool pending) {
+    Preferences prefs;
+    if (!prefs.begin(kPrefsNamespace, false)) {
+      return false;
+    }
+
+    prefs.putBool("prov_pending", pending);
     prefs.end();
     return true;
   }
@@ -131,6 +144,9 @@ class OnboardingPortal {
     }
     if (config.sleepSeconds == 0) {
       config.sleepSeconds = kDefaultSleepSeconds;
+    }
+    if (needsPortal) {
+      config.provisioningPending = true;
     }
 
     return store.save(config);

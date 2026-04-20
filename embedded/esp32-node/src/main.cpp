@@ -25,6 +25,8 @@ void logDeviceIdentity(const DeviceConfig& config) {
       "MQTT target: %s:%u\n",
       config.mqttHost.c_str(),
       static_cast<unsigned int>(config.mqttPort));
+  Serial.printf(
+      "Provisioning pending: %s\n", config.provisioningPending ? "yes" : "no");
 }
 
 void logReadings(const SensorReadings& readings, const char* label) {
@@ -142,9 +144,17 @@ void setup() {
     goToDeepSleep(config.sleepSeconds);
   }
 
-  const bool provisioningPublished = backendClient.publishProvisioning();
-  Serial.printf(
-      "Provisioning publish %s\n", provisioningPublished ? "succeeded" : "failed");
+  if (config.provisioningPending) {
+    const bool provisioningPublished = backendClient.publishProvisioning();
+    Serial.printf(
+        "Provisioning publish %s\n", provisioningPublished ? "succeeded" : "failed");
+    if (provisioningPublished) {
+      config.provisioningPending = false;
+      configStore.setProvisioningPending(false);
+    }
+  } else {
+    Serial.println("Provisioning skipped for this wake cycle.");
+  }
 
   const bool onlineStatusPublished = backendClient.publishStatus(true);
   Serial.printf(

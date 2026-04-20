@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
@@ -70,3 +70,24 @@ async def claim_device(body: ClaimRequest, uid: str = Depends(get_current_user))
 
     firestore.add_device_to_user(uid, device_id)
     return {"success": True, "device_id": device_id}
+
+
+@app.post("/devices/{device_id}/unclaim")
+async def unclaim_device(device_id: str, uid: str = Depends(get_current_user)):
+    firestore = get_firestore_service()
+    if not firestore.verify_device_ownership(uid, device_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Device not owned by user"
+        )
+
+    firestore.remove_device_from_user(uid, device_id)
+    remaining_users = firestore.get_device_users(device_id)
+    reopened = False
+    if not remaining_users:
+        reopened = firestore.reopen_claim(device_id)
+
+    return {
+        "success": True,
+        "device_id": device_id,
+        "claim_reopened": reopened,
+    }

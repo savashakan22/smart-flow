@@ -35,9 +35,9 @@ class TestMQTTSubscriber:
             callback(mock_client, None, None, 0, None)
 
             assert subscriber._connected is True
-            mock_client.subscribe.assert_any_call("telemetry/#")
-            mock_client.subscribe.assert_any_call("provisioning/#")
-            mock_client.subscribe.assert_any_call("status/#")
+            mock_client.subscribe.assert_any_call("group3/telemetry/#")
+            mock_client.subscribe.assert_any_call("group3/provisioning/#")
+            mock_client.subscribe.assert_any_call("group3/status/#")
 
     def test_on_connect_failure(self, mock_settings):
         with (
@@ -90,7 +90,7 @@ class TestMQTTSubscriber:
 
             subscriber = MQTTSubscriber()
             msg = MagicMock()
-            msg.topic = "telemetry/esp32_001"
+            msg.topic = "group3/telemetry/esp32_001"
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
@@ -146,7 +146,7 @@ class TestMQTTSubscriber:
 
             subscriber = MQTTSubscriber()
             msg = MagicMock()
-            msg.topic = "provisioning/esp32_001"
+            msg.topic = "group3/provisioning/esp32_001"
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
@@ -181,7 +181,7 @@ class TestMQTTSubscriber:
 
             subscriber = MQTTSubscriber()
             msg = MagicMock()
-            msg.topic = "telemetry/esp32_001"
+            msg.topic = "group3/telemetry/esp32_001"
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
