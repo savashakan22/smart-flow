@@ -2,8 +2,8 @@ import Skeleton from "react-loading-skeleton";
 
 export default function DetailPanelSkeleton() {
   return (
-    <section className="detail-panel">
-      <div className="detail-panel__header">
+    <section className="detail-panel detail--skeleton">
+      <div className="detail-panel__header--skeleton">
         <div>
           <Skeleton width={120} height={18} />
           <Skeleton width={80} height={40} style={{ marginTop: 6 }} />
@@ -15,7 +15,7 @@ export default function DetailPanelSkeleton() {
 
       <div className="detail-panel__layout">
         <aside className="detail-panel__meter-card">
-          <div className="detail-panel__meter-head">
+          <div className="detail-panel__meter-head--skeleton">
             <Skeleton width={90} height={16} />
             <Skeleton width={40} height={22} style={{ marginTop: 6 }} />
           </div>
@@ -24,7 +24,7 @@ export default function DetailPanelSkeleton() {
             <Skeleton circle width={200} height={200} />
           </div>
 
-          <div className="detail-panel__meter-meta">
+          <div className="detail-panel__meter-meta--skeleton">
             <Skeleton width={110} height={14} style={{ display: "inline-block" }} />
             <Skeleton width={130} height={16} />
           </div>
@@ -44,12 +44,12 @@ export default function DetailPanelSkeleton() {
               </div>
             </div>
 
-            <div className="detail-panel__chart-wrap">
+            <div className="detail-panel__chart-wrap--skeleton">
               <Skeleton height={260} borderRadius={20} />
             </div>
           </div>
 
-          <div className="detail-panel__stats-grid">
+          <div className="detail-panel__stats-grid--skeleton">
             {Array.from({ length: 4 }).map((_, i) => (
               <article key={i} className="detail-panel__stat-card">
                 <Skeleton width={120} height={16} />

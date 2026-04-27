@@ -76,7 +76,7 @@ const METRIC_DEFINITIONS = [
   },
 ];
 
-function formatLastUpdated(timestamp: string | undefined): string {
+export function formatLastUpdated(timestamp: string | undefined): string {
   if (!timestamp) return "No recent update";
 
   const diffMs = Date.now() - new Date(timestamp).getTime();
@@ -133,7 +133,7 @@ export function mapReadingsToMetrics(
       value: Number(numericValue.toFixed(2)),
       statusText,
       trend: getTrend(history),
-      lastUpdated: formatLastUpdated(latest.timestamp),
+      lastUpdated: latest.timestamp,
       history,
     };
   });
