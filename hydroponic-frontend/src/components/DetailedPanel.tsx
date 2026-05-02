@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Metric } from "../types/dashboard";
 import CircleMeter from "./CircleMeter";
+import { formatLastUpdated } from "../data/metrics";
 
 type DetailedPanelProps = {
   metric: Metric;
@@ -102,6 +103,16 @@ function getPolylinePoints(
 }
 
 export default function DetailedPanel({ metric }: DetailedPanelProps) {
+  const [, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   const chartWidth = 640;
   const chartHeight = 260;
 
@@ -134,6 +145,8 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
     chartMax
   );
 
+  const liveLastUpdated = formatLastUpdated(metric.lastUpdated);
+
   const stats = [
     {
       label: "Current Value",
@@ -149,7 +162,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
     },
     {
       label: "Last Update",
-      value: metric.lastUpdated,
+      value: liveLastUpdated,
     },
   ];
 
@@ -186,7 +199,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
               Ideal: {metric.idealMin} - {metric.idealMax}
               {metric.unit}
             </span>
-            <span>Updated: {metric.lastUpdated}</span>
+            <span>Updated: {liveLastUpdated}</span>
           </div>
         </aside>
 
@@ -250,7 +263,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
 
                   return (
                     <circle
-                      key={point.label}
+                      key={`${point.label}-${index}`}
                       cx={x}
                       cy={y}
                       r={point.predicted ? 4 : 5}
@@ -270,8 +283,8 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
                   gridTemplateColumns: `repeat(${chartPoints.length}, minmax(0, 1fr))`,
                 }}
               >
-                {chartPoints.map((point) => (
-                  <span key={point.label}>{point.label}</span>
+                {chartPoints.map((point, index) => (
+                  <span key={`${point.label}-${index}`}>{point.label}</span>
                 ))}
               </div>
             </div>
