@@ -31,14 +31,34 @@ void logDeviceIdentity(const DeviceConfig& config) {
 
 void logReadings(const SensorReadings& readings, const char* label) {
   Serial.printf(
-      "%s ec=%.2f air_temp=%.2f humidity=%.2f water_level=%.2f water_temp=%.2f light=%.2f\n",
+      "%s ec=%.2f air_temp=%.2f humidity=%.2f water_level=%.2f water_temp=%.2f light=%.2f sensor_ok=%s\n",
       label,
       readings.ec,
       readings.airTemp,
       readings.humidity,
       readings.waterLevel,
       readings.waterTemp,
-      readings.light);
+      readings.light,
+      readings.sensorOk() ? "yes" : "no");
+  if (!readings.sensorOk()) {
+    Serial.print("Sensor failures:");
+    if (!readings.ahtOk) {
+      Serial.print(" aht25");
+    }
+    if (!readings.ds18b20Ok) {
+      Serial.print(" ds18b20");
+    }
+    if (!readings.tdsOk) {
+      Serial.print(" tds");
+    }
+    if (!readings.waterLevelOk) {
+      Serial.print(" water_level");
+    }
+    if (!readings.lightOk) {
+      Serial.print(" light");
+    }
+    Serial.println();
+  }
 }
 
 const char* mqttStateLabel(int state) {

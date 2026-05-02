@@ -23,12 +23,18 @@ class SensorSuite {
   bool read(SensorReadings& readings) {
     const uint32_t entropy = esp_random();
 
-    readings.ec = 1.20f + static_cast<float>(entropy % 160) / 100.0f;
-    readings.airTemp = 19.0f + static_cast<float>((entropy >> 4) % 130) / 10.0f;
-    readings.humidity = 45.0f + static_cast<float>((entropy >> 9) % 400) / 10.0f;
-    readings.waterLevel = 35.0f + static_cast<float>((entropy >> 13) % 650) / 10.0f;
-    readings.waterTemp = 18.0f + static_cast<float>((entropy >> 18) % 100) / 10.0f;
-    readings.light = 150.0f + static_cast<float>((entropy >> 22) % 750);
+    // Dry bench / room profile: probes are powered, but not installed in water.
+    readings.ec = static_cast<float>(entropy % 6) / 100.0f;
+    readings.airTemp = 20.5f + static_cast<float>((entropy >> 4) % 50) / 10.0f;
+    readings.humidity = 35.0f + static_cast<float>((entropy >> 9) % 210) / 10.0f;
+    readings.waterLevel = static_cast<float>((entropy >> 13) % 31) / 10.0f;
+    readings.waterTemp = 20.0f + static_cast<float>((entropy >> 18) % 55) / 10.0f;
+    readings.light = 80.0f + static_cast<float>((entropy >> 22) % 420);
+    readings.ahtOk = true;
+    readings.ds18b20Ok = true;
+    readings.tdsOk = true;
+    readings.waterLevelOk = true;
+    readings.lightOk = true;
     return true;
   }
 #else
@@ -61,21 +67,23 @@ class SensorSuite {
   bool read(SensorReadings& readings) {
     const float airTemp = aht_.readTemperature();
     const float humidity = aht_.readHumidity();
+    readings.ahtOk = isValidAhtValue(airTemp) && isValidAhtValue(humidity);
 
     waterThermometer_.requestTemperatures();
     const float waterTemp = waterThermometer_.getTempCByIndex(0);
-    if (waterTemp == DEVICE_DISCONNECTED_C || waterTemp <= kInvalidTemperature) {
-      return false;
-    }
+    readings.ds18b20Ok = isValidWaterTemperature(waterTemp);
 
     readings.airTemp = sanitizeAhtValue(airTemp, 18.0f);
     readings.humidity = sanitizeAhtValue(humidity, 50.0f);
-    readings.waterTemp = waterTemp;
+    readings.waterTemp = readings.ds18b20Ok ? waterTemp : 20.0f;
 
     const float tdsPpm = readTdsPpm(readings.waterTemp);
     readings.ec = tdsPpmToEc(tdsPpm);
     readings.waterLevel = readWaterLevelPercent();
     readings.light = readRelativeLight();
+    readings.tdsOk = true;
+    readings.waterLevelOk = true;
+    readings.lightOk = true;
     return true;
   }
 
@@ -84,11 +92,20 @@ class SensorSuite {
   DallasTemperature waterThermometer_;
   AHTxx aht_;
 
-  float sanitizeAhtValue(float value, float fallback) {
+  bool isValidAhtValue(float value) {
     if (value == 255.0f || isnan(value) || isinf(value)) {
-      return fallback;
+      return false;
     }
-    return value;
+    return true;
+  }
+
+  bool isValidWaterTemperature(float value) {
+    return value != DEVICE_DISCONNECTED_C && value > kInvalidTemperature &&
+           !isnan(value) && !isinf(value);
+  }
+
+  float sanitizeAhtValue(float value, float fallback) {
+    return isValidAhtValue(value) ? value : fallback;
   }
 
   uint16_t readAverageRaw(uint8_t pin) {

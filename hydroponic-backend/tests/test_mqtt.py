@@ -71,6 +71,14 @@ class TestMQTTSubscriber:
                 "water_temp": 20.0,
                 "light": 500.0,
                 "timestamp": "2026-04-18T10:00:00Z",
+                "sensor_ok": False,
+                "sensor_error_count": 1,
+                "failed_sensors": ["ds18b20"],
+                "aht_ok": True,
+                "ds18b20_ok": False,
+                "tds_ok": True,
+                "water_level_ok": True,
+                "light_ok": True,
             },
         )
 
@@ -100,6 +108,10 @@ class TestMQTTSubscriber:
             call_args = mock_influx.write_telemetry.call_args
             assert call_args[0][0] == "esp32_001"
             assert call_args[0][1]["ec"] == 1.5
+            status_payload = mock_firestore.update_device_status.call_args[0][1]
+            assert status_payload["telemetry_schema"] == "v3"
+            assert status_payload["sensor_ok"] is False
+            assert status_payload["failed_sensors"] == ["ds18b20"]
 
     def test_on_message_invalid_topic(self, mock_settings, mock_influx):
         with (
