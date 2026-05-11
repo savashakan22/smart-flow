@@ -67,6 +67,23 @@ Telemetry payload fields:
 - `light`
 - `timestamp`
 - `device_id`
+- `sensor_ok`
+- `sensor_error_count`
+- `failed_sensors`
+- `aht_ok`
+- `ds18b20_ok`
+- `tds_ok`
+- `water_level_ok`
+- `light_ok`
+
+If a digital sensor cannot be read, the node still publishes telemetry with a
+fallback value and marks the failed sensor in the health fields. For example,
+a missing DS18B20 sends `ds18b20_ok=false`, includes `ds18b20` in
+`failed_sensors`, and uses a fallback `water_temp` so the encrypted MQTT flow can
+still be tested end to end. The serial monitor also prints the failed sensor
+names after each sample. Analog sensors are always sampled; their physical
+disconnect state cannot be detected reliably from the ESP32 alone without extra
+hardware constraints.
 
 Provisioning payload fields:
 

@@ -61,6 +61,21 @@ struct SensorReadings {
   float waterLevel = 0.0f;
   float waterTemp = 0.0f;
   float light = 0.0f;
+  bool ahtOk = true;
+  bool ds18b20Ok = true;
+  bool tdsOk = true;
+  bool waterLevelOk = true;
+  bool lightOk = true;
+
+  bool sensorOk() const {
+    return ahtOk && ds18b20Ok && tdsOk && waterLevelOk && lightOk;
+  }
+
+  uint8_t sensorErrorCount() const {
+    return static_cast<uint8_t>((ahtOk ? 0 : 1) + (ds18b20Ok ? 0 : 1) +
+                                (tdsOk ? 0 : 1) + (waterLevelOk ? 0 : 1) +
+                                (lightOk ? 0 : 1));
+  }
 };
 
 inline String chipIdentifier() {

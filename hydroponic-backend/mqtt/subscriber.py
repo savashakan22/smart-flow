@@ -90,7 +90,23 @@ class MQTTSubscriber:
             "water_temp": payload.get("water_temp"),
             "light": payload.get("light"),
         }
+        sensor_health = {
+            "sensor_ok": payload.get("sensor_ok", True),
+            "sensor_error_count": payload.get("sensor_error_count", 0),
+            "failed_sensors": payload.get("failed_sensors", []),
+            "aht_ok": payload.get("aht_ok", True),
+            "ds18b20_ok": payload.get("ds18b20_ok", True),
+            "tds_ok": payload.get("tds_ok", True),
+            "water_level_ok": payload.get("water_level_ok", True),
+            "light_ok": payload.get("light_ok", True),
+        }
         logger.info("Accepted telemetry for device %s: %s", device_id, telemetry_data)
+        if not sensor_health["sensor_ok"]:
+            logger.warning(
+                "Telemetry for device %s contains sensor failures: %s",
+                device_id,
+                sensor_health["failed_sensors"],
+            )
 
         influx = get_influx_service()
         influx.write_telemetry(device_id, telemetry_data, timestamp)
@@ -100,8 +116,9 @@ class MQTTSubscriber:
             device_id,
             {
                 "last_telemetry_at": timestamp.isoformat(),
-                "telemetry_schema": "v2",
+                "telemetry_schema": "v3",
                 "online": True,
+                **sensor_health,
             },
         )
 

@@ -286,7 +286,7 @@ class BackendClient {
   bool buildProtectedTelemetryEnvelope(
       const SensorReadings& readings,
       String& protectedPayload) {
-    DynamicJsonDocument doc(384);
+    DynamicJsonDocument doc(768);
     doc["device_id"] = config_.deviceId;
     const String timestamp = isoTimestamp();
     if (timestamp.length() > 0) {
@@ -298,6 +298,30 @@ class BackendClient {
     doc["water_level"] = round2(readings.waterLevel);
     doc["water_temp"] = round2(readings.waterTemp);
     doc["light"] = round2(readings.light);
+    doc["sensor_ok"] = readings.sensorOk();
+    doc["sensor_error_count"] = readings.sensorErrorCount();
+    doc["aht_ok"] = readings.ahtOk;
+    doc["ds18b20_ok"] = readings.ds18b20Ok;
+    doc["tds_ok"] = readings.tdsOk;
+    doc["water_level_ok"] = readings.waterLevelOk;
+    doc["light_ok"] = readings.lightOk;
+
+    JsonArray failedSensors = doc["failed_sensors"].to<JsonArray>();
+    if (!readings.ahtOk) {
+      failedSensors.add("aht25");
+    }
+    if (!readings.ds18b20Ok) {
+      failedSensors.add("ds18b20");
+    }
+    if (!readings.tdsOk) {
+      failedSensors.add("tds");
+    }
+    if (!readings.waterLevelOk) {
+      failedSensors.add("water_level");
+    }
+    if (!readings.lightOk) {
+      failedSensors.add("light");
+    }
 
     return crypto_.protect("telemetry", sequences_.nextTelemetrySequence(), doc, protectedPayload);
   }
