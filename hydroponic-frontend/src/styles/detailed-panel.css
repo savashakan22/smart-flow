@@ -199,8 +199,29 @@
     width: 100%;
   }
 
-  .detail-panel__chart {
+  .detail-panel__chart-scroll {
     width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--primary) 35%, transparent) transparent;
+  }
+
+  .detail-panel__chart-scroll::-webkit-scrollbar {
+    height: 0.5rem;
+  }
+
+  .detail-panel__chart-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999rem;
+    background: color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  .detail-panel__chart-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .detail-panel__chart {
     height: 17.5rem;
 
     .recharts-surface {

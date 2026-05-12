@@ -17,6 +17,17 @@ type MetricHistoryChartProps = {
   timeRange: TimeRange;
 };
 
+function getChartMinWidthRem(timeRange: TimeRange, pointCount: number) {
+  const settings = {
+    hourly: { base: 42, perPoint: 3.4 },
+    daily: { base: 52, perPoint: 4.6 },
+    weekly: { base: 60, perPoint: 5.4 },
+  } satisfies Record<TimeRange, { base: number; perPoint: number }>;
+
+  const { base, perPoint } = settings[timeRange];
+  return Math.max(base, pointCount * perPoint);
+}
+
 function formatAxisTick(value: number) {
   const rounded = Number(value.toFixed(2));
 
@@ -90,6 +101,10 @@ function getTooltipDateFormat(timeRange: TimeRange): Intl.DateTimeFormatOptions 
 export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryChartProps) {
   const chartPoints = useMemo(() => buildChartPoints(metric, timeRange), [metric, timeRange]);
   const chartData = useMemo(() => buildChartData(chartPoints), [chartPoints]);
+  const chartMinWidthRem = useMemo(
+    () => getChartMinWidthRem(timeRange, chartData.length),
+    [chartData.length, timeRange]
+  );
 
   const chartMin = Math.min(metric.min, ...chartPoints.map((point) => point.value));
   const chartMax = Math.max(metric.max, ...chartPoints.map((point) => point.value));
@@ -97,64 +112,69 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
 
   return (
     <div className="detail-panel__chart-wrap">
-      <div className="detail-panel__chart">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
-            <CartesianGrid
-              stroke="color-mix(in srgb, var(--text-muted) 18%, transparent)"
-              strokeDasharray="4 8"
-              vertical={false}
-            />
-            <ReferenceArea
-              y1={metric.idealMin}
-              y2={metric.idealMax}
-              fill="var(--primary)"
-              fillOpacity={0.08}
-              ifOverflow="extendDomain"
-            />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-              minTickGap={20}
-              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
-            />
-            <YAxis
-              domain={[chartMin - yAxisPadding, chartMax + yAxisPadding]}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-              width={52}
-              tickFormatter={formatAxisTick}
-              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
-            />
-            <Tooltip
-              cursor={{ stroke: "var(--primary)", strokeOpacity: 0.2, strokeWidth: 1 }}
-              content={<ChartTooltip timeRange={timeRange} unit={metric.unit} />}
-            />
-            <Line
-              type="monotone"
-              dataKey="actual"
-              name="Actual"
-              stroke="var(--primary)"
-              strokeWidth={3}
-              dot={{ r: 4, fill: "var(--primary)", strokeWidth: 0 }}
-              activeDot={{ r: 6, fill: "var(--primary)" }}
-            />
-            <Line
-              type="monotone"
-              dataKey="forecast"
-              name="Linear Regression"
-              stroke="var(--primary)"
-              strokeWidth={3}
-              strokeDasharray="8 7"
-              dot={{ r: 3.5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
-              activeDot={{ r: 5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
-              connectNulls
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="detail-panel__chart-scroll">
+        <div
+          className="detail-panel__chart"
+          style={{ width: `max(100%, ${chartMinWidthRem}rem)` }}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
+              <CartesianGrid
+                stroke="color-mix(in srgb, var(--text-muted) 18%, transparent)"
+                strokeDasharray="4 8"
+                vertical={false}
+              />
+              <ReferenceArea
+                y1={metric.idealMin}
+                y2={metric.idealMax}
+                fill="var(--primary)"
+                fillOpacity={0.08}
+                ifOverflow="extendDomain"
+              />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                minTickGap={20}
+                tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+              />
+              <YAxis
+                domain={[chartMin - yAxisPadding, chartMax + yAxisPadding]}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                width={52}
+                tickFormatter={formatAxisTick}
+                tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+              />
+              <Tooltip
+                cursor={{ stroke: "var(--primary)", strokeOpacity: 0.2, strokeWidth: 1 }}
+                content={<ChartTooltip timeRange={timeRange} unit={metric.unit} />}
+              />
+              <Line
+                type="monotone"
+                dataKey="actual"
+                name="Actual"
+                stroke="var(--primary)"
+                strokeWidth={3}
+                dot={{ r: 4, fill: "var(--primary)", strokeWidth: 0 }}
+                activeDot={{ r: 6, fill: "var(--primary)" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="forecast"
+                name="Linear Regression"
+                stroke="var(--primary)"
+                strokeWidth={3}
+                strokeDasharray="8 7"
+                dot={{ r: 3.5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
+                connectNulls
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       <div className="detail-panel__chart-footnote">
