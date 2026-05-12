@@ -131,6 +131,7 @@
     display: grid;
     justify-items: end;
     gap: 0.75rem;
+    min-width: min(100%, 22rem);
   }
 
   .detail-panel__range-switcher {
@@ -204,6 +205,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 0.5rem;
+    border-radius: 1rem;
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--primary) 35%, transparent) transparent;
   }
@@ -227,6 +229,15 @@
     .recharts-surface {
       overflow: visible;
     }
+  }
+
+  .detail-panel__chart-hint {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.125rem;
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    letter-spacing: 0.01em;
   }
 
   .detail-panel__tooltip {
@@ -318,11 +329,18 @@
     .detail-panel__chart-controls {
       width: 100%;
       justify-items: stretch;
+      min-width: 0;
     }
 
     .detail-panel__range-switcher {
       width: 100%;
       justify-content: space-between;
+    }
+
+    .detail-panel__range-option {
+      flex: 1 1 0;
+      padding-inline: 0.625rem;
+      text-align: center;
     }
 
     .detail-panel__stats-grid {
@@ -336,6 +354,10 @@
     .detail-panel__chart-footnote {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .detail-panel__chart-hint {
+      justify-content: flex-start;
     }
   }
 }

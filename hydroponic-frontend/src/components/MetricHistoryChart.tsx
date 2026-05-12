@@ -224,6 +224,10 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
         </div>
       </div>
 
+      <div className="detail-panel__chart-hint">
+        <span>Scroll sideways to explore the full timeline.</span>
+      </div>
+
       <div className="detail-panel__chart-footnote">
         <span>Shaded band marks the ideal operating range.</span>
         <span>
