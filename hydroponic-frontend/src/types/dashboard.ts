@@ -1,4 +1,5 @@
 export type TrendDirection = "up" | "down" | "stable";
+export type TimeRange = "hourly" | "daily" | "weekly";
 
 export type MetricHistoryPoint = {
   timestamp: string;

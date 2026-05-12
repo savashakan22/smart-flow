@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import DetailPanel from "../components/DetailedPanel";
 import DetailPanelSkeleton from "../components/DetailedPanelSkeleton";
 import { mapReadingsToMetrics, metrics as fallbackMetrics } from "../data/metrics";
-import type { ThemeMode, Metric } from "../types/dashboard";
+import type { ThemeMode, Metric, TimeRange } from "../types/dashboard";
 import { fetchHistory, fetchLatestReading } from "../services/api";
 
 type Props = {
@@ -26,6 +26,7 @@ export default function DetailPage({
   const navigate = useNavigate();
   const { deviceId, metricId } = useParams();
   const [metrics, setMetrics] = useState<Metric[]>(fallbackMetrics);
+  const [timeRange] = useState<TimeRange>("hourly");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -95,7 +96,10 @@ export default function DetailPage({
             isAuthenticated={isAuthenticated}
           />
 
-          <main className="detail-page-only content-shell content-shell--detail">
+          <main
+            className="detail-page-only content-shell content-shell--detail"
+            data-time-range={timeRange}
+          >
             <div className="detail-page-topbar">
               <button
                 type="button"
