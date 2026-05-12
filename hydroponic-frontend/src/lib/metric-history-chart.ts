@@ -74,15 +74,20 @@ export function linearRegressionForecast(history: MetricHistoryPoint[], count = 
   });
 }
 
-export function buildChartPoints(metric: Metric, timeRange: TimeRange): ChartPoint[] {
+export function buildChartPoints(metric: Metric, timeRange: TimeRange, includeForecast = true): ChartPoint[] {
   const history = getMetricHistory(metric);
-  const predictions = linearRegressionForecast(history, 3);
   const actualPoints = history.map((point) => ({
     timestamp: point.timestamp,
     label: formatTimeLabel(point.timestamp, timeRange),
     value: point.value,
     predicted: false,
   }));
+
+  if (!includeForecast) {
+    return actualPoints;
+  }
+
+  const predictions = linearRegressionForecast(history, 3);
 
   const lastTimestamp = new Date(history[history.length - 1]?.timestamp ?? Date.now());
   const previousTimestamp = new Date(history[history.length - 2]?.timestamp ?? lastTimestamp);
@@ -102,7 +107,7 @@ export function buildChartPoints(metric: Metric, timeRange: TimeRange): ChartPoi
   return [...actualPoints, ...predictionPoints];
 }
 
-export function buildChartData(chartPoints: ChartPoint[]): ChartDatum[] {
+export function buildChartData(chartPoints: ChartPoint[], includeForecast = true): ChartDatum[] {
   const firstPredictionIndex = chartPoints.findIndex((point) => point.predicted);
   const forecastAnchorIndex = firstPredictionIndex > 0 ? firstPredictionIndex - 1 : -1;
 
@@ -110,7 +115,8 @@ export function buildChartData(chartPoints: ChartPoint[]): ChartDatum[] {
     timestamp: point.timestamp,
     label: point.label,
     actual: point.predicted ? null : point.value,
-    forecast: point.predicted || index === forecastAnchorIndex ? point.value : null,
+    forecast:
+      includeForecast && (point.predicted || index === forecastAnchorIndex) ? point.value : null,
     value: point.value,
     predicted: Boolean(point.predicted),
   }));

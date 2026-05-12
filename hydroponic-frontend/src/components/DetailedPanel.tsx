@@ -21,6 +21,7 @@ export default function DetailedPanel({
   timeRange,
   onTimeRangeChange,
 }: DetailedPanelProps) {
+  const showForecast = timeRange === "hourly";
   const [, setRefreshTick] = useState(0);
 
   useEffect(() => {
@@ -93,7 +94,7 @@ export default function DetailedPanel({
             <div className="detail-panel__chart-head">
               <div>
                 <p className="detail-panel__section-label">Metric Trend</p>
-                <h3>{metric.title} history and prediction</h3>
+                <h3>{metric.title} {showForecast ? "history and prediction" : "history"}</h3>
               </div>
 
               <div className="detail-panel__chart-controls">
@@ -118,10 +119,12 @@ export default function DetailedPanel({
                     <i className="detail-panel__legend-line" />
                     Actual
                   </span>
-                  <span>
-                    <i className="detail-panel__legend-line detail-panel__legend-line--dashed" />
-                    Linear Regression
-                  </span>
+                  {showForecast ? (
+                    <span>
+                      <i className="detail-panel__legend-line detail-panel__legend-line--dashed" />
+                      Linear Regression
+                    </span>
+                  ) : null}
                 </div>
               </div>
             </div>

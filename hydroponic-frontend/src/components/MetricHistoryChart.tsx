@@ -127,8 +127,15 @@ function getTooltipDateFormat(timeRange: TimeRange): Intl.DateTimeFormatOptions 
 }
 
 export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryChartProps) {
-  const chartPoints = useMemo(() => buildChartPoints(metric, timeRange), [metric, timeRange]);
-  const chartData = useMemo(() => buildChartData(chartPoints), [chartPoints]);
+  const showForecast = timeRange === "hourly";
+  const chartPoints = useMemo(
+    () => buildChartPoints(metric, timeRange, showForecast),
+    [metric, showForecast, timeRange]
+  );
+  const chartData = useMemo(
+    () => buildChartData(chartPoints, showForecast),
+    [chartPoints, showForecast]
+  );
   const chartMinWidthRem = useMemo(
     () => getChartMinWidthRem(timeRange, chartData.length),
     [chartData.length, timeRange]
@@ -194,17 +201,24 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
                 dot={displaySettings.actualDot}
                 activeDot={{ r: 6, fill: "var(--primary)" }}
               />
-              <Line
-                type="monotone"
-                dataKey="forecast"
-                name="Linear Regression"
-                stroke="var(--primary)"
-                strokeWidth={3}
-                strokeDasharray="8 7"
-                dot={displaySettings.forecastDot}
-                activeDot={{ r: 5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
-                connectNulls
-              />
+              {showForecast ? (
+                <Line
+                  type="monotone"
+                  dataKey="forecast"
+                  name="Linear Regression"
+                  stroke="var(--primary)"
+                  strokeWidth={3}
+                  strokeDasharray="8 7"
+                  dot={displaySettings.forecastDot}
+                  activeDot={{
+                    r: 5,
+                    fill: "var(--surface)",
+                    stroke: "var(--primary)",
+                    strokeWidth: 2,
+                  }}
+                  connectNulls
+                />
+              ) : null}
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -212,7 +226,11 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
 
       <div className="detail-panel__chart-footnote">
         <span>Shaded band marks the ideal operating range.</span>
-        <span>Hover or tap the chart to inspect each reading.</span>
+        <span>
+          {showForecast
+            ? "Hover or tap the chart to inspect each reading and forecast."
+            : "Hover or tap the chart to inspect each reading."}
+        </span>
       </div>
     </div>
   );
