@@ -159,7 +159,7 @@
 
 .detail-panel__chart {
   width: 100%;
-  min-height: 280px;
+  height: 280px;
 }
 
 .detail-panel__chart .recharts-surface {
@@ -255,7 +255,7 @@
   }
 
   .detail-panel__chart {
-    min-height: 232px;
+    height: 232px;
   }
 
   .detail-panel__chart-footnote {
