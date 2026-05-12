@@ -1,5 +1,10 @@
 export type TrendDirection = "up" | "down" | "stable";
 
+export type MetricHistoryPoint = {
+  timestamp: string;
+  value: number;
+};
+
 export type Metric = {
   id: string;
   title: string;
@@ -14,7 +19,7 @@ export type Metric = {
   description: string;
   trend: TrendDirection;
   lastUpdated: string;
-  history?: number[];
+  history?: MetricHistoryPoint[];
 };
 
 export type ThemeMode = "light" | "dark";
