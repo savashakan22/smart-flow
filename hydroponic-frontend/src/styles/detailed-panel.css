@@ -159,51 +159,54 @@
 
 .detail-panel__chart {
   width: 100%;
-  height: 260px;
+  min-height: 280px;
+}
+
+.detail-panel__chart .recharts-surface {
   overflow: visible;
 }
 
-.detail-panel__grid-line {
-  stroke: color-mix(in srgb, var(--text-muted) 18%, transparent);
-  stroke-width: 1;
+.detail-panel__tooltip {
+  min-width: 128px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
 }
 
-.detail-panel__line {
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.detail-panel__tooltip p,
+.detail-panel__tooltip strong,
+.detail-panel__tooltip span {
+  display: block;
 }
 
-.detail-panel__line--actual {
-  stroke: var(--primary);
-}
-
-.detail-panel__line--forecast {
-  stroke: var(--primary);
-  stroke-dasharray: 10 8;
-}
-
-.detail-panel__dot--actual {
-  fill: var(--primary);
-}
-
-.detail-panel__dot--forecast {
-  fill: var(--surface);
-  stroke: var(--primary);
-  stroke-width: 2.5;
-}
-
-.detail-panel__x-axis {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.detail-panel__x-axis span {
-  text-align: center;
-  font-size: 0.82rem;
+.detail-panel__tooltip p {
+  margin: 0 0 4px;
   color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.detail-panel__tooltip strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.detail-panel__tooltip span {
+  margin-top: 4px;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.detail-panel__chart-footnote {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
 }
 
 .detail-panel__stats-grid {
@@ -251,8 +254,12 @@
     grid-template-columns: 1fr;
   }
 
-  .detail-panel__x-axis {
-    grid-template-columns: repeat(8, minmax(44px, 1fr));
-    overflow-x: auto;
+  .detail-panel__chart {
+    min-height: 232px;
+  }
+
+  .detail-panel__chart-footnote {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
