@@ -26,7 +26,7 @@ export default function DetailPage({
   const navigate = useNavigate();
   const { deviceId, metricId } = useParams();
   const [metrics, setMetrics] = useState<Metric[]>(fallbackMetrics);
-  const [timeRange] = useState<TimeRange>("hourly");
+  const [timeRange, setTimeRange] = useState<TimeRange>("hourly");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -112,7 +112,15 @@ export default function DetailPage({
 
             {error && <p className="auth-error">{error}</p>}
 
-            {loading ? <DetailPanelSkeleton /> : <DetailPanel metric={metric} />}
+            {loading ? (
+              <DetailPanelSkeleton />
+            ) : (
+              <DetailPanel
+                metric={metric}
+                timeRange={timeRange}
+                onTimeRangeChange={setTimeRange}
+              />
+            )}
           </main>
         </div>
       </div>

@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
-import type { Metric } from "../types/dashboard";
+import type { Metric, TimeRange } from "../types/dashboard";
 import CircleMeter from "./CircleMeter";
 import MetricHistoryChart from "./MetricHistoryChart";
 import { formatLastUpdated } from "../data/metrics";
 
 type DetailedPanelProps = {
   metric: Metric;
+  timeRange: TimeRange;
+  onTimeRangeChange: (range: TimeRange) => void;
 };
 
-export default function DetailedPanel({ metric }: DetailedPanelProps) {
+const TIME_RANGE_OPTIONS: Array<{ label: string; value: TimeRange }> = [
+  { label: "Hourly", value: "hourly" },
+  { label: "Daily", value: "daily" },
+  { label: "Weekly", value: "weekly" },
+];
+
+export default function DetailedPanel({
+  metric,
+  timeRange,
+  onTimeRangeChange,
+}: DetailedPanelProps) {
   const [, setRefreshTick] = useState(0);
 
   useEffect(() => {
@@ -84,15 +96,33 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
                 <h3>{metric.title} history and prediction</h3>
               </div>
 
-              <div className="detail-panel__legend">
-                <span>
-                  <i className="detail-panel__legend-line" />
-                  Actual
-                </span>
-                <span>
-                  <i className="detail-panel__legend-line detail-panel__legend-line--dashed" />
-                  Linear Regression
-                </span>
+              <div className="detail-panel__chart-controls">
+                <div className="detail-panel__range-switcher" aria-label="History range">
+                  {TIME_RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`detail-panel__range-option ${
+                        timeRange === option.value ? "is-active" : ""
+                      }`}
+                      onClick={() => onTimeRangeChange(option.value)}
+                      aria-pressed={timeRange === option.value}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="detail-panel__legend">
+                  <span>
+                    <i className="detail-panel__legend-line" />
+                    Actual
+                  </span>
+                  <span>
+                    <i className="detail-panel__legend-line detail-panel__legend-line--dashed" />
+                    Linear Regression
+                  </span>
+                </div>
               </div>
             </div>
 
