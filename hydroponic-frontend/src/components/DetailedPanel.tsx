@@ -126,7 +126,7 @@ export default function DetailedPanel({
               </div>
             </div>
 
-            <MetricHistoryChart metric={metric} />
+            <MetricHistoryChart metric={metric} timeRange={timeRange} />
           </div>
 
           <div className="detail-panel__stats-grid">

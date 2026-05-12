@@ -9,11 +9,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { Metric } from "../types/dashboard";
+import type { Metric, TimeRange } from "../types/dashboard";
 import { buildChartData, buildChartPoints, type ChartDatum } from "../lib/metric-history-chart";
 
 type MetricHistoryChartProps = {
   metric: Metric;
+  timeRange: TimeRange;
 };
 
 function formatAxisTick(value: number) {
@@ -29,12 +30,12 @@ function formatAxisTick(value: number) {
 function ChartTooltip({
   active,
   payload,
-  label,
+  timeRange,
   unit,
 }: {
   active?: boolean;
   payload?: Array<{ payload?: ChartDatum }>;
-  label?: string;
+  timeRange: TimeRange;
   unit: string;
 }) {
   if (!active || !payload?.length) {
@@ -49,7 +50,7 @@ function ChartTooltip({
 
   return (
     <div className="detail-panel__tooltip">
-      <p>{label}</p>
+      <p>{new Date(point.timestamp).toLocaleString([], getTooltipDateFormat(timeRange))}</p>
       <strong>
         {point.value.toFixed(2)}
         {unit}
@@ -59,8 +60,35 @@ function ChartTooltip({
   );
 }
 
-export default function MetricHistoryChart({ metric }: MetricHistoryChartProps) {
-  const chartPoints = useMemo(() => buildChartPoints(metric), [metric]);
+function getTooltipDateFormat(timeRange: TimeRange): Intl.DateTimeFormatOptions {
+  if (timeRange === "hourly") {
+    return {
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "numeric",
+      month: "short",
+    };
+  }
+
+  if (timeRange === "daily") {
+    return {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+  }
+
+  return {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  };
+}
+
+export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryChartProps) {
+  const chartPoints = useMemo(() => buildChartPoints(metric, timeRange), [metric, timeRange]);
   const chartData = useMemo(() => buildChartData(chartPoints), [chartPoints]);
 
   const chartMin = Math.min(metric.min, ...chartPoints.map((point) => point.value));
@@ -103,7 +131,7 @@ export default function MetricHistoryChart({ metric }: MetricHistoryChartProps) 
             />
             <Tooltip
               cursor={{ stroke: "var(--primary)", strokeOpacity: 0.2, strokeWidth: 1 }}
-              content={<ChartTooltip unit={metric.unit} />}
+              content={<ChartTooltip timeRange={timeRange} unit={metric.unit} />}
             />
             <Line
               type="monotone"

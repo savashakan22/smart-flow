@@ -1,4 +1,4 @@
-import type { Metric, MetricHistoryPoint } from "../types/dashboard";
+import type { Metric, MetricHistoryPoint, TimeRange } from "../types/dashboard";
 
 export type ChartPoint = {
   timestamp: string;
@@ -16,11 +16,27 @@ export type ChartDatum = {
   predicted: boolean;
 };
 
-function formatTimeLabel(timestamp: string) {
-  return new Date(timestamp).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
+function formatTimeLabel(timestamp: string, timeRange: TimeRange) {
+  const date = new Date(timestamp);
+
+  if (timeRange === "hourly") {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+
+  if (timeRange === "daily") {
+    return date.toLocaleDateString([], {
+      weekday: "short",
+      day: "numeric",
+    });
+  }
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
   });
 }
 
@@ -58,12 +74,12 @@ export function linearRegressionForecast(history: MetricHistoryPoint[], count = 
   });
 }
 
-export function buildChartPoints(metric: Metric): ChartPoint[] {
+export function buildChartPoints(metric: Metric, timeRange: TimeRange): ChartPoint[] {
   const history = getMetricHistory(metric);
   const predictions = linearRegressionForecast(history, 3);
   const actualPoints = history.map((point) => ({
     timestamp: point.timestamp,
-    label: formatTimeLabel(point.timestamp),
+    label: formatTimeLabel(point.timestamp, timeRange),
     value: point.value,
     predicted: false,
   }));
@@ -77,7 +93,7 @@ export function buildChartPoints(metric: Metric): ChartPoint[] {
 
     return {
       timestamp,
-      label: formatTimeLabel(timestamp),
+      label: formatTimeLabel(timestamp, timeRange),
       value,
       predicted: true,
     };
