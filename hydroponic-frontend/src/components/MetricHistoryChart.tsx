@@ -17,6 +17,34 @@ type MetricHistoryChartProps = {
   timeRange: TimeRange;
 };
 
+function getChartDisplaySettings(timeRange: TimeRange, pointCount: number) {
+  const denseRange = pointCount > 18;
+
+  if (timeRange === "hourly") {
+    return {
+      minTickGap: denseRange ? 26 : 20,
+      actualDot: denseRange ? false : { r: 4, fill: "var(--primary)", strokeWidth: 0 },
+      forecastDot: denseRange
+        ? false
+        : { r: 3.5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 },
+    };
+  }
+
+  if (timeRange === "daily") {
+    return {
+      minTickGap: 40,
+      actualDot: false,
+      forecastDot: false,
+    };
+  }
+
+  return {
+    minTickGap: 52,
+    actualDot: false,
+    forecastDot: false,
+  };
+}
+
 function getChartMinWidthRem(timeRange: TimeRange, pointCount: number) {
   const settings = {
     hourly: { base: 42, perPoint: 3.4 },
@@ -105,6 +133,10 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
     () => getChartMinWidthRem(timeRange, chartData.length),
     [chartData.length, timeRange]
   );
+  const displaySettings = useMemo(
+    () => getChartDisplaySettings(timeRange, chartData.length),
+    [chartData.length, timeRange]
+  );
 
   const chartMin = Math.min(metric.min, ...chartPoints.map((point) => point.value));
   const chartMax = Math.max(metric.max, ...chartPoints.map((point) => point.value));
@@ -136,7 +168,8 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
-                minTickGap={20}
+                minTickGap={displaySettings.minTickGap}
+                interval="preserveStartEnd"
                 tick={{ fill: "var(--text-muted)", fontSize: 12 }}
               />
               <YAxis
@@ -158,7 +191,7 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
                 name="Actual"
                 stroke="var(--primary)"
                 strokeWidth={3}
-                dot={{ r: 4, fill: "var(--primary)", strokeWidth: 0 }}
+                dot={displaySettings.actualDot}
                 activeDot={{ r: 6, fill: "var(--primary)" }}
               />
               <Line
@@ -168,7 +201,7 @@ export default function MetricHistoryChart({ metric, timeRange }: MetricHistoryC
                 stroke="var(--primary)"
                 strokeWidth={3}
                 strokeDasharray="8 7"
-                dot={{ r: 3.5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
+                dot={displaySettings.forecastDot}
                 activeDot={{ r: 5, fill: "var(--surface)", stroke: "var(--primary)", strokeWidth: 2 }}
                 connectNulls
               />
