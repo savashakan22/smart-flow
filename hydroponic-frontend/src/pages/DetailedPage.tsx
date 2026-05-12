@@ -17,6 +17,24 @@ type Props = {
   token: string | null;
 };
 
+function getHistoryWindow(range: TimeRange, now = new Date()) {
+  const end = new Date(now);
+  const start = new Date(now);
+
+  if (range === "hourly") {
+    start.setHours(start.getHours() - 24);
+  } else if (range === "daily") {
+    start.setDate(start.getDate() - 7);
+  } else {
+    start.setDate(start.getDate() - 84);
+  }
+
+  return {
+    start: start.toISOString(),
+    end: end.toISOString(),
+  };
+}
+
 export default function DetailPage({
   theme,
   onToggleTheme,
@@ -38,6 +56,7 @@ export default function DetailPage({
 
     const selectedDeviceId = deviceId;
     const authToken = token;
+    const { start, end } = getHistoryWindow(timeRange);
     let isMounted = true;
 
     async function load() {
@@ -47,7 +66,7 @@ export default function DetailPage({
 
         const [latest, history] = await Promise.all([
           fetchLatestReading(selectedDeviceId, authToken),
-          fetchHistory(selectedDeviceId, authToken),
+          fetchHistory(selectedDeviceId, authToken, start, end),
         ]);
 
         if (!isMounted) return;
@@ -67,7 +86,7 @@ export default function DetailPage({
     return () => {
       isMounted = false;
     };
-  }, [deviceId, token]);
+  }, [deviceId, timeRange, token]);
 
   const metric = useMemo(
     () => metrics.find((item) => item.id === metricId) ?? metrics[0],
