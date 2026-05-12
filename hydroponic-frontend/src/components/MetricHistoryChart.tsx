@@ -16,6 +16,16 @@ type MetricHistoryChartProps = {
   metric: Metric;
 };
 
+function formatAxisTick(value: number) {
+  const rounded = Number(value.toFixed(2));
+
+  if (Number.isInteger(rounded)) {
+    return rounded.toString();
+  }
+
+  return rounded.toString();
+}
+
 function ChartTooltip({
   active,
   payload,
@@ -88,6 +98,7 @@ export default function MetricHistoryChart({ metric }: MetricHistoryChartProps) 
               axisLine={false}
               tickMargin={10}
               width={52}
+              tickFormatter={formatAxisTick}
               tick={{ fill: "var(--text-muted)", fontSize: 12 }}
             />
             <Tooltip
