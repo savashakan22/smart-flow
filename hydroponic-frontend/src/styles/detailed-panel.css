@@ -47,13 +47,40 @@
     justify-content: center;
     min-height: 2.625rem;
     padding-inline: 1rem;
-    border: 0.0625rem solid color-mix(in srgb, var(--primary) 20%, transparent);
     border-radius: 999rem;
-    background: var(--primary-soft);
-    color: var(--primary);
+    background: color-mix(in srgb, var(--success) 12%, var(--surface));
+    color: var(--success);
+    border: 0.0625rem solid color-mix(in srgb, var(--success) 24%, transparent);
     font-size: 0.86rem;
     font-weight: 800;
     white-space: nowrap;
+  }
+
+  .detail-panel__alarm-block {
+    display: grid;
+    justify-items: end;
+    gap: 0.5rem;
+  }
+
+  &.alarm-level--warning {
+    border-color: color-mix(in srgb, var(--warning) 32%, var(--border));
+
+    .detail-panel__status-chip {
+      background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+      color: var(--warning);
+      border-color: color-mix(in srgb, var(--warning) 28%, transparent);
+    }
+  }
+
+  &.alarm-level--alarm {
+    border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+    box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--danger) 10%, transparent), var(--shadow-sm);
+
+    .detail-panel__status-chip {
+      background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+      color: var(--danger);
+      border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+    }
   }
 
   .detail-panel__layout {
@@ -68,7 +95,7 @@
   .detail-panel__stat-card {
     border: 0.0625rem solid var(--border);
     border-radius: 1.5rem;
-    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    background: var(--surface);
     box-shadow: var(--shadow-sm);
   }
 

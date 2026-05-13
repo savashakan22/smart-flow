@@ -8,7 +8,7 @@ import MetricCard from "../components/MetricCard";
 import MetricCardSkeleton from "../components/MetricCardSkeleton";
 import { mapReadingsToMetrics, metrics as fallbackMetrics } from "../data/metrics";
 import type { ThemeMode, Metric } from "../types/dashboard";
-import { fetchHistory, fetchLatestReading } from "../services/api";
+import { fetchLatestReading } from "../services/api";
 
 type Props = {
   theme: ThemeMode;
@@ -44,13 +44,10 @@ export default function OverviewPage({
         setLoading(true);
         setError("");
 
-        const [latest, history] = await Promise.all([
-          fetchLatestReading(selectedDeviceId, authToken),
-          fetchHistory(selectedDeviceId, authToken),
-        ]);
+        const latest = await fetchLatestReading(selectedDeviceId, authToken);
 
         if (!isMounted) return;
-        setMetrics(mapReadingsToMetrics(latest, history.data));
+        setMetrics(mapReadingsToMetrics(latest, []));
       } catch (loadError) {
         if (!isMounted) return;
         setError(loadError instanceof Error ? loadError.message : "Failed to load metrics");
@@ -96,6 +93,16 @@ export default function OverviewPage({
           />
 
           <main className="overview-page-only content-shell content-shell--overview">
+            <div className="detail-page-topbar">
+              <button
+                type="button"
+                className="back-overview-btn"
+                onClick={() => navigate("/devices")}
+              >
+                Back to devices
+              </button>
+            </div>
+
             <section className="overview-section">
               <div className="section-heading">
                 <div>

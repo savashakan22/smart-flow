@@ -157,7 +157,11 @@ export function linearRegressionForecast(history: MetricHistoryPoint[], count = 
   });
 }
 
-export function buildChartPoints(metric: Metric, timeRange: TimeRange, includeForecast = true): ChartPoint[] {
+export function buildChartPoints(
+  metric: Metric,
+  timeRange: TimeRange,
+  includeForecast = true
+): ChartPoint[] {
   const history = getMetricHistory(metric, timeRange);
   const actualPoints = history.map((point) => ({
     timestamp: point.timestamp,

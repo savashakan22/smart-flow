@@ -29,11 +29,31 @@
   transition: all 0.2s ease;
 }
 
+.metric-card.alarm-level--warning {
+  border-color: color-mix(in srgb, var(--warning) 32%, var(--border));
+}
+
+.metric-card.alarm-level--alarm {
+  border-color: color-mix(in srgb, var(--danger) 48%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 10%, transparent), var(--shadow-sm);
+}
+
 .metric-card:hover,
 .metric-card--compact:hover {
   transform: translateY(-4px);
   border-color: var(--border-strong);
   box-shadow: var(--shadow-md);
+}
+
+.metric-card.alarm-level--warning:hover,
+.metric-card--compact.alarm-level--warning:hover {
+  border-color: color-mix(in srgb, var(--warning) 32%, var(--border));
+}
+
+.metric-card.alarm-level--alarm:hover,
+.metric-card--compact.alarm-level--alarm:hover {
+  border-color: color-mix(in srgb, var(--danger) 48%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 10%, transparent), var(--shadow-md);
 }
 
 .metric-card.active,
@@ -56,7 +76,7 @@
   color: var(--text);
 }
 
-.metric-card__trend {
+.metric-card__alarm-level {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -78,22 +98,22 @@
   padding: 4px 10px;
 }
 
-.trend--up {
-  color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
-  border-color: color-mix(in srgb, var(--warning) 24%, transparent);
-}
-
-.trend--down {
-  color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
-  border-color: color-mix(in srgb, var(--warning) 24%, transparent);
-}
-
-.trend--stable {
+.metric-card__alarm-level {
   color: var(--success);
   background: color-mix(in srgb, var(--success) 14%, var(--surface));
   border-color: color-mix(in srgb, var(--success) 24%, transparent);
+}
+
+.alarm-level--warning .metric-card__alarm-level {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--warning) 28%, transparent);
+}
+
+.alarm-level--alarm .metric-card__alarm-level {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--danger) 32%, transparent);
 }
 
 .metric-card__meter {

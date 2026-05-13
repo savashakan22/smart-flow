@@ -1,5 +1,6 @@
 export type TrendDirection = "up" | "down" | "stable";
 export type TimeRange = "hourly" | "daily" | "weekly";
+export type AlarmLevel = "normal" | "warning" | "alarm";
 
 export type MetricHistoryPoint = {
   timestamp: string;
@@ -17,6 +18,7 @@ export type Metric = {
   idealMin: number;
   idealMax: number;
   statusText: string;
+  alarmLevel: AlarmLevel;
   description: string;
   trend: TrendDirection;
   lastUpdated: string;
