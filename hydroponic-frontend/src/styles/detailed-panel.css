@@ -69,7 +69,6 @@
 .detail-panel__alarm-block {
   display: grid;
   justify-items: end;
-  gap: 8px;
 }
 
 .detail-panel__alarm-level {
