@@ -200,6 +200,10 @@
     width: 100%;
   }
 
+  .detail-panel__chart-wrap--loading {
+    height: 17.5rem;
+  }
+
   .detail-panel__chart {
     height: 17.5rem;
 
@@ -343,6 +347,10 @@
     }
 
     .detail-panel__chart {
+      height: 14.5rem;
+    }
+
+    .detail-panel__chart-wrap--loading {
       height: 14.5rem;
     }
 

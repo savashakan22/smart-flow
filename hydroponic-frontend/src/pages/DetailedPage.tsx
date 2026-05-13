@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -8,6 +8,7 @@ import DetailPanel from "../components/DetailedPanel";
 import DetailPanelSkeleton from "../components/DetailedPanelSkeleton";
 import { mapReadingsToMetrics, metrics as fallbackMetrics } from "../data/metrics";
 import type { ThemeMode, Metric, TimeRange } from "../types/dashboard";
+import type { LatestReadingResponse } from "../services/api";
 import { fetchHistory, fetchLatestReading } from "../services/api";
 
 type Props = {
@@ -43,33 +44,53 @@ export default function DetailPage({
 }: Props) {
   const navigate = useNavigate();
   const { deviceId, metricId } = useParams();
+  const latestReadingCacheRef = useRef<{
+    deviceId: string;
+    reading: LatestReadingResponse;
+  } | null>(null);
   const [metrics, setMetrics] = useState<Metric[]>(fallbackMetrics);
   const [timeRange, setTimeRange] = useState<TimeRange>("hourly");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false);
 
   useEffect(() => {
     if (!deviceId || !token) {
       setLoading(false);
+      setChartLoading(false);
       return;
     }
 
     const selectedDeviceId = deviceId;
     const authToken = token;
     const { start, end } = getHistoryWindow(timeRange);
+    const cachedLatest =
+      latestReadingCacheRef.current?.deviceId === selectedDeviceId
+        ? latestReadingCacheRef.current.reading
+        : null;
+    const needsInitialLoad = cachedLatest === null;
     let isMounted = true;
 
     async function load() {
       try {
-        setLoading(true);
+        if (needsInitialLoad) {
+          setLoading(true);
+        } else {
+          setChartLoading(true);
+        }
         setError("");
 
         const [latest, history] = await Promise.all([
-          fetchLatestReading(selectedDeviceId, authToken),
+          cachedLatest
+            ? Promise.resolve(cachedLatest)
+            : fetchLatestReading(selectedDeviceId, authToken),
           fetchHistory(selectedDeviceId, authToken, start, end),
         ]);
 
         if (!isMounted) return;
+        if (!cachedLatest) {
+          latestReadingCacheRef.current = { deviceId: selectedDeviceId, reading: latest };
+        }
         setMetrics(mapReadingsToMetrics(latest, history.data));
       } catch (loadError) {
         if (!isMounted) return;
@@ -77,6 +98,7 @@ export default function DetailPage({
       } finally {
         if (isMounted) {
           setLoading(false);
+          setChartLoading(false);
         }
       }
     }
@@ -137,6 +159,7 @@ export default function DetailPage({
               <DetailPanel
                 metric={metric}
                 timeRange={timeRange}
+                chartLoading={chartLoading}
                 onTimeRangeChange={setTimeRange}
               />
             )}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Skeleton from "react-loading-skeleton";
 import type { Metric, TimeRange } from "../types/dashboard";
 import CircleMeter from "./CircleMeter";
 import MetricHistoryChart from "./MetricHistoryChart";
@@ -7,6 +8,7 @@ import { formatLastUpdated } from "../data/metrics";
 type DetailedPanelProps = {
   metric: Metric;
   timeRange: TimeRange;
+  chartLoading: boolean;
   onTimeRangeChange: (range: TimeRange) => void;
 };
 
@@ -19,6 +21,7 @@ const TIME_RANGE_OPTIONS: Array<{ label: string; value: TimeRange }> = [
 export default function DetailedPanel({
   metric,
   timeRange,
+  chartLoading,
   onTimeRangeChange,
 }: DetailedPanelProps) {
   const showForecast = timeRange === "hourly";
@@ -129,7 +132,13 @@ export default function DetailedPanel({
               </div>
             </div>
 
-            <MetricHistoryChart metric={metric} timeRange={timeRange} />
+            {chartLoading ? (
+              <div className="detail-panel__chart-wrap detail-panel__chart-wrap--loading">
+                <Skeleton height="100%" borderRadius={20} />
+              </div>
+            ) : (
+              <MetricHistoryChart metric={metric} timeRange={timeRange} />
+            )}
           </div>
 
           <div className="detail-panel__stats-grid">
