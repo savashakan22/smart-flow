@@ -37,6 +37,7 @@ function formatTimeLabel(timestamp: string, timeRange: TimeRange) {
   return date.toLocaleDateString([], {
     month: "short",
     day: "numeric",
+    year: "2-digit",
   });
 }
 
@@ -86,6 +87,19 @@ function getDayBucketKey(timestamp: string) {
   return `${year}-${month}-${day}`;
 }
 
+function getStartOfWeek(date: Date) {
+  const weekStart = new Date(date);
+  const day = weekStart.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  weekStart.setDate(weekStart.getDate() + diff);
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart;
+}
+
+function getWeekBucketKey(timestamp: string) {
+  return getStartOfWeek(new Date(timestamp)).toISOString();
+}
+
 function bucketMetricHistory(history: MetricHistoryPoint[], timeRange: TimeRange): MetricHistoryPoint[] {
   const sortedHistory = [...history].sort(
     (left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime()
@@ -98,7 +112,8 @@ function bucketMetricHistory(history: MetricHistoryPoint[], timeRange: TimeRange
   const buckets = new Map<string, MetricHistoryPoint[]>();
 
   for (const point of sortedHistory) {
-    const key = getDayBucketKey(point.timestamp);
+    const key =
+      timeRange === "weekly" ? getWeekBucketKey(point.timestamp) : getDayBucketKey(point.timestamp);
     const bucket = buckets.get(key);
 
     if (bucket) {
@@ -111,10 +126,13 @@ function bucketMetricHistory(history: MetricHistoryPoint[], timeRange: TimeRange
   return Array.from(buckets.values()).map((bucket) => {
     const total = bucket.reduce((sum, point) => sum + point.value, 0);
     const average = total / bucket.length;
-    const midpoint = bucket[Math.floor(bucket.length / 2)] ?? bucket[bucket.length - 1];
+    const representativeTimestamp =
+      timeRange === "weekly"
+        ? getStartOfWeek(new Date(bucket[0]?.timestamp ?? Date.now())).toISOString()
+        : (bucket[Math.floor(bucket.length / 2)] ?? bucket[bucket.length - 1]).timestamp;
 
     return {
-      timestamp: midpoint.timestamp,
+      timestamp: representativeTimestamp,
       value: Number(average.toFixed(2)),
     };
   });
