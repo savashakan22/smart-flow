@@ -176,13 +176,17 @@ void setup() {
   }
   logDeviceIdentity(config);
 
-  if (!backendClient.begin(config) || !backendClient.beginSecuritySession()) {
+  if (!backendClient.begin(config)) {
     Serial.println("Security initialization failed.");
     goToDeepSleep(config.sleepSeconds);
   }
 
   if (!backendClient.connectWifi()) {
     Serial.printf("Wi-Fi connection failed. status=%d\n", static_cast<int>(WiFi.status()));
+    if (!backendClient.beginSecuritySession()) {
+      Serial.println("Security session initialization failed.");
+      goToDeepSleep(config.sleepSeconds);
+    }
     SensorReadings readings;
     if (sensorSuite.read(readings)) {
       logReadings(readings, "Buffering offline telemetry:");
@@ -190,6 +194,14 @@ void setup() {
     }
     goToDeepSleep(config.sleepSeconds);
   }
+
+  if (!backendClient.beginSecuritySession()) {
+    Serial.println("Security session initialization failed.");
+    goToDeepSleep(config.sleepSeconds);
+  }
+  Serial.printf(
+      "Security session prefix: %lu\n",
+      static_cast<unsigned long>(backendClient.securitySessionPrefix()));
 
   if (!backendClient.connectMqtt()) {
     const int mqttState = backendClient.mqttState();

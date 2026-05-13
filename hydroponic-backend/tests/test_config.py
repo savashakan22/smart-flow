@@ -13,6 +13,10 @@ class TestConfig:
             "MQTT_IP": "192.168.1.100",
             "MQTT_USERNAME": "mqtt_user",
             "MQTT_PASSWORD": "mqtt_pass",
+            "MQTT_CRYPTO_MASTER_KEY_HEX": (
+                "00112233445566778899aabbccddeeff"
+                "00112233445566778899aabbccddeeff"
+            ),
             "FIREBASE_CREDENTIALS_PATH": "firebase-credentials.json",
         }
         with patch.dict(os.environ, env_vars, clear=True):
@@ -26,6 +30,7 @@ class TestConfig:
                     assert settings.influx_bucket == "test_bucket"
                     assert settings.mqtt_ip == "192.168.1.100"
                     assert settings.mqtt_username == "mqtt_user"
+                    assert settings.mqtt_allow_legacy_sequence_replay is False
 
     def test_default_values(self):
         env_vars = {
@@ -36,6 +41,10 @@ class TestConfig:
             "MQTT_IP": "192.168.1.100",
             "MQTT_USERNAME": "mqtt_user",
             "MQTT_PASSWORD": "mqtt_pass",
+            "MQTT_CRYPTO_MASTER_KEY_HEX": (
+                "00112233445566778899aabbccddeeff"
+                "00112233445566778899aabbccddeeff"
+            ),
             "FIREBASE_CREDENTIALS_PATH": "firebase-credentials.json",
         }
         with patch.dict(os.environ, env_vars, clear=True):
@@ -46,3 +55,4 @@ class TestConfig:
                     settings = Settings()
                     assert settings.influx_org == "TestOrg"
                     assert settings.influx_bucket == "test_bucket"
+                    assert settings.mqtt_topic_prefix == "group3"

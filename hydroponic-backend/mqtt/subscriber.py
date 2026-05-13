@@ -20,6 +20,9 @@ class MQTTSubscriber:
         settings = get_settings()
         self._topic_prefix = settings.mqtt_topic_prefix.strip("/")
         self._topic_prefix_parts = self._topic_prefix.split("/")
+        self._allow_legacy_sequence_replay = (
+            settings.mqtt_allow_legacy_sequence_replay
+        )
         self._client = Client(
             callback_api_version=CallbackAPIVersion.VERSION2,
             client_id="hydroponic-backend",
@@ -33,9 +36,18 @@ class MQTTSubscriber:
         if reason_code == 0:
             logger.info("Connected to MQTT broker")
             self._connected = True
-            client.subscribe(f"{self._topic_prefix}/telemetry/#")
-            client.subscribe(f"{self._topic_prefix}/provisioning/#")
-            client.subscribe(f"{self._topic_prefix}/status/#")
+            telemetry_topic = f"{self._topic_prefix}/telemetry/#"
+            provisioning_topic = f"{self._topic_prefix}/provisioning/#"
+            status_topic = f"{self._topic_prefix}/status/#"
+            client.subscribe(telemetry_topic)
+            client.subscribe(provisioning_topic)
+            client.subscribe(status_topic)
+            logger.info(
+                "Subscribed to MQTT topics: %s, %s, %s",
+                telemetry_topic,
+                provisioning_topic,
+                status_topic,
+            )
         else:
             logger.error(f"MQTT connection failed with code {reason_code}")
 
@@ -131,7 +143,14 @@ class MQTTSubscriber:
             len(alerts),
         )
 
-    def _decode_and_verify(self, namespace: str, device_id: str, raw_payload: str) -> dict | None:
+    def _decode_and_verify(
+        self,
+        namespace: str,
+        device_id: str,
+        raw_payload: str,
+        *,
+        retained: bool = False,
+    ) -> dict | None:
         crypto = get_crypto_service()
         firestore = get_firestore_service()
 
@@ -156,6 +175,25 @@ class MQTTSubscriber:
         if not firestore.accept_message_sequence(
             device_id, namespace, protected.sequence
         ):
+            if retained:
+                logger.info(
+                    "Ignoring retained replayed %s payload for %s with sequence %s",
+                    namespace,
+                    device_id,
+                    protected.sequence,
+                )
+                return None
+            if self._allow_legacy_sequence_replay and namespace in {
+                "telemetry",
+                "status",
+            }:
+                logger.warning(
+                    "Accepted legacy replayed %s payload for %s with sequence %s because MQTT_ALLOW_LEGACY_SEQUENCE_REPLAY is enabled",
+                    namespace,
+                    device_id,
+                    protected.sequence,
+                )
+                return protected.payload
             logger.warning(
                 "Rejected replayed %s payload for %s with sequence %s",
                 namespace,
@@ -168,6 +206,9 @@ class MQTTSubscriber:
 
     def _on_message(self, client, userdata, msg):
         try:
+            retained = bool(getattr(msg, "retain", False))
+            logger.info("Received MQTT message topic=%s retained=%s", msg.topic, retained)
+
             topic_parts = msg.topic.split("/")
             if len(topic_parts) < len(self._topic_prefix_parts) + 2:
                 logger.warning("Unexpected topic format: %s", msg.topic)
@@ -186,7 +227,12 @@ class MQTTSubscriber:
                 return
 
             raw_payload = msg.payload.decode()
-            payload = self._decode_and_verify(namespace, device_id, raw_payload)
+            payload = self._decode_and_verify(
+                namespace,
+                device_id,
+                raw_payload,
+                retained=retained,
+            )
             if payload is None:
                 return
 
