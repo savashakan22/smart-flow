@@ -11,7 +11,7 @@ type MetricCardProps = {
 function getAlarmLabel(alarmLevel: Metric["alarmLevel"]) {
   if (alarmLevel === "alarm") return "High alarm";
   if (alarmLevel === "warning") return "Warning";
-  return "Normal";
+  return "Ideal";
 }
 
 export default function MetricCard({
