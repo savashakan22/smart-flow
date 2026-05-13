@@ -19,7 +19,7 @@ export default function LoginPage({
   onToggleTheme,
 }: Props) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("example@mail.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
