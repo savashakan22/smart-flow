@@ -252,7 +252,7 @@
     color: #f8fafc;
     box-shadow: var(--shadow-lg);
     transform: translateX(-100%);
-    transition: transform 0.24s ease;
+    transition: transform 0.24s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
     gap: 18px;
