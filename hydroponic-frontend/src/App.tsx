@@ -20,7 +20,14 @@ type UserProfile = {
   email: string;
 };
 
-function ProtectedRoute({ isAuthenticated }: { isAuthenticated: boolean }) {
+function ProtectedRoute({
+  isAuthenticated,
+  authReady,
+}: {
+  isAuthenticated: boolean;
+  authReady: boolean;
+}) {
+  if (!authReady) return null;
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
@@ -34,6 +41,7 @@ function profileFromUser(user: User): UserProfile {
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authReady, setAuthReady] = useState(!auth);
   const [user, setUser] = useState<UserProfile>({ fullName: "", email: "" });
   const [token, setToken] = useState<string | null>(null);
   const [devices, setDevices] = useState<Device[]>(initialDevices);
@@ -58,6 +66,7 @@ export default function App() {
         setUser({ fullName: "", email: "" });
         setToken(null);
         setDevices([]);
+        setAuthReady(true);
         return;
       }
 
@@ -70,6 +79,8 @@ export default function App() {
         await loadDevices(idToken);
       } catch (error) {
         console.error(error);
+      } finally {
+        setAuthReady(true);
       }
     });
 
@@ -144,12 +155,18 @@ export default function App() {
       <Route
         path="/"
         element={
-          <LandingPage
-            theme={theme}
-            isAuthenticated={isAuthenticated}
-            user={user}
-            onToggleTheme={setTheme}
-          />
+          !authReady ? (
+            null
+          ) : isAuthenticated ? (
+            <Navigate to="/devices" replace />
+          ) : (
+            <LandingPage
+              theme={theme}
+              isAuthenticated={isAuthenticated}
+              user={user}
+              onToggleTheme={setTheme}
+            />
+          )
         }
       />
 
@@ -185,7 +202,7 @@ export default function App() {
         }
       />
 
-      <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
+      <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} authReady={authReady} />}>
         <Route
           path="/devices"
           element={

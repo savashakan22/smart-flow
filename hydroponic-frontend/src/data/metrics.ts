@@ -1,5 +1,5 @@
 import type { HistoryRow, LatestReadingResponse } from "../services/api";
-import type { Metric, MetricHistoryPoint, TrendDirection } from "../types/dashboard";
+import type { AlarmLevel, Metric, MetricHistoryPoint, TrendDirection } from "../types/dashboard";
 
 const METRIC_DEFINITIONS = [
   {
@@ -79,7 +79,7 @@ const METRIC_DEFINITIONS = [
 export function formatLastUpdated(timestamp: string | undefined): string {
   if (!timestamp) return "No recent update";
 
-  const diffMs = Date.now() - new Date(timestamp).getTime();
+  const diffMs = Date.now() - new Date(timestamp).getTime() - 3*60*60*1000;
   const diffMin = Math.max(0, Math.round(diffMs / 60000));
 
   if (diffMin < 1) return "just now";
@@ -103,10 +103,34 @@ function getTrend(history: MetricHistoryPoint[]): TrendDirection {
   return "stable";
 }
 
+function getAlarmLevel(value: number, metric: (typeof METRIC_DEFINITIONS)[number]): AlarmLevel {
+  if (value >= metric.idealMin && value <= metric.idealMax) {
+    return "normal";
+  }
+
+  const fullRange = metric.max - metric.min;
+  const warningBuffer = fullRange * 0.12;
+  const nearIdealMin = Math.max(metric.min, metric.idealMin - warningBuffer);
+  const nearIdealMax = Math.min(metric.max, metric.idealMax + warningBuffer);
+
+  if (value >= nearIdealMin && value <= nearIdealMax) {
+    return "warning";
+  }
+
+  return "alarm";
+}
+
+function getStatusText(alarmLevel: AlarmLevel) {
+  if (alarmLevel === "normal") return "Ideal";
+  if (alarmLevel === "warning") return "Warning";
+  return "Alarm";
+}
+
 export const metrics: Metric[] = METRIC_DEFINITIONS.map((metric) => ({
   ...metric,
   value: 0,
   statusText: "No Data",
+  alarmLevel: "warning",
   trend: "stable",
   lastUpdated: "No recent update",
   history: [],
@@ -137,15 +161,13 @@ export function mapReadingsToMetrics(
     const numericValue =
       typeof value === "number" ? value : history[history.length - 1]?.value ?? 0;
 
-    const statusText =
-      numericValue >= definition.idealMin && numericValue <= definition.idealMax
-        ? "Ideal"
-        : "Out of range";
+    const alarmLevel = getAlarmLevel(numericValue, definition);
 
     return {
       ...definition,
       value: Number(numericValue.toFixed(2)),
-      statusText,
+      statusText: getStatusText(alarmLevel),
+      alarmLevel,
       trend: getTrend(history),
       lastUpdated: latest.timestamp,
       history,

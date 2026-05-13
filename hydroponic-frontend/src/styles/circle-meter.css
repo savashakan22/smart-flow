@@ -30,8 +30,16 @@
 }
 
 .circle-meter__progress {
-  stroke: var(--primary);
+  stroke: var(--success);
   transition: all 0.45s ease;
+}
+
+.circle-meter.alarm-level--warning .circle-meter__progress {
+  stroke: var(--warning);
+}
+
+.circle-meter.alarm-level--alarm .circle-meter__progress {
+  stroke: var(--danger);
 }
 
 .circle-meter__content {

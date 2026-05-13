@@ -1,9 +1,12 @@
+import type { AlarmLevel } from "../types/dashboard";
+
 type CircleMeterProps = {
   value: number;
   min: number;
   max: number;
   label: string;
   unit: string;
+  alarmLevel?: AlarmLevel;
   size?: "sm" | "lg";
 };
 
@@ -13,6 +16,7 @@ export default function CircleMeter({
   max,
   label,
   unit,
+  alarmLevel = "normal",
   size = "lg",
 }: CircleMeterProps) {
   const percentage = Math.max(
@@ -29,7 +33,7 @@ export default function CircleMeter({
   const dashOffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className={`circle-meter circle-meter--${size}`}>
+    <div className={`circle-meter circle-meter--${size} alarm-level--${alarmLevel}`}>
       <svg
         className="circle-meter__svg"
         width={dimension}
