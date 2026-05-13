@@ -1,5 +1,5 @@
 import type { HistoryRow, LatestReadingResponse } from "../services/api";
-import type { AlarmLevel, Metric, TrendDirection } from "../types/dashboard";
+import type { AlarmLevel, Metric, MetricHistoryPoint, TrendDirection } from "../types/dashboard";
 
 const METRIC_DEFINITIONS = [
   {
@@ -90,11 +90,13 @@ export function formatLastUpdated(timestamp: string | undefined): string {
   return `${hours} hour${hours > 1 ? "s" : ""} ago`;
 }
 
-function getTrend(history: number[]): TrendDirection {
+function getTrend(history: MetricHistoryPoint[]): TrendDirection {
   if (history.length < 2) return "stable";
 
-  const prev = history[history.length - 2];
-  const next = history[history.length - 1];
+  const prev = history[history.length - 2]?.value;
+  const next = history[history.length - 1]?.value;
+
+  if (prev === undefined || next === undefined) return "stable";
 
   if (next > prev) return "up";
   if (next < prev) return "down";
@@ -140,12 +142,24 @@ export function mapReadingsToMetrics(
 ): Metric[] {
   return METRIC_DEFINITIONS.map((definition) => {
     const history = historyRows
-      .map((row) => row[definition.sensorKey])
-      .filter((value): value is number => typeof value === "number");
+      .map((row) => {
+        const value = row[definition.sensorKey];
+
+        if (typeof value !== "number") {
+          return null;
+        }
+
+        return {
+          timestamp: row.timestamp,
+          value,
+        };
+      })
+      .filter((point): point is MetricHistoryPoint => point !== null);
 
     const value = latest[definition.sensorKey];
 
-    const numericValue = typeof value === "number" ? value : history[history.length - 1] ?? 0;
+    const numericValue =
+      typeof value === "number" ? value : history[history.length - 1]?.value ?? 0;
 
     const alarmLevel = getAlarmLevel(numericValue, definition);
 
