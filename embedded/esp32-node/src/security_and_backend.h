@@ -403,7 +403,7 @@ class BackendClient {
   }
 
   String topicFor(const char* messageType) {
-    return String(kMqttTopicGroup) + "/" + messageType + "/" + config_.deviceId;
+    return String(kMqttTopicPrefix) + "/" + messageType + "/" + config_.deviceId;
   }
 
   bool isClockSynchronized() {

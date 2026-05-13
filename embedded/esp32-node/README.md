@@ -43,6 +43,11 @@ The firmware publishes to these topics:
 - `group3/telemetry/<device_id>`: sensor payload compatible with `hydroponic-backend/mqtt/subscriber.py`
 - `group3/status/<device_id>`: health and availability information
 
+The topic prefix is configurable. The production default is `group3`; development
+deployments should use `MQTT_TOPIC_PREFIX=group3/dev` on the backend and a
+firmware build with `SMARTFLOW_MQTT_TOPIC_PREFIX="group3/dev"`. The PlatformIO
+environments `esp32dev-dev` and `esp32dev-dev-mock` already set that build flag.
+
 All three payload types are wrapped in an encrypted envelope:
 
 - `seq`

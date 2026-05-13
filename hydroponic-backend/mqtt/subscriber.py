@@ -12,12 +12,14 @@ from services.influx import get_influx_service
 
 logger = logging.getLogger(__name__)
 MIN_ACCEPTABLE_TELEMETRY_TIME = datetime(2024, 1, 1, tzinfo=timezone.utc)
-TOPIC_GROUP = "group3"
+TOPIC_NAMESPACES = {"telemetry", "provisioning", "status"}
 
 
 class MQTTSubscriber:
     def __init__(self):
         settings = get_settings()
+        self._topic_prefix = settings.mqtt_topic_prefix.strip("/")
+        self._topic_prefix_parts = self._topic_prefix.split("/")
         self._client = Client(
             callback_api_version=CallbackAPIVersion.VERSION2,
             client_id="hydroponic-backend",
@@ -31,9 +33,9 @@ class MQTTSubscriber:
         if reason_code == 0:
             logger.info("Connected to MQTT broker")
             self._connected = True
-            client.subscribe(f"{TOPIC_GROUP}/telemetry/#")
-            client.subscribe(f"{TOPIC_GROUP}/provisioning/#")
-            client.subscribe(f"{TOPIC_GROUP}/status/#")
+            client.subscribe(f"{self._topic_prefix}/telemetry/#")
+            client.subscribe(f"{self._topic_prefix}/provisioning/#")
+            client.subscribe(f"{self._topic_prefix}/status/#")
         else:
             logger.error(f"MQTT connection failed with code {reason_code}")
 
@@ -167,17 +169,19 @@ class MQTTSubscriber:
     def _on_message(self, client, userdata, msg):
         try:
             topic_parts = msg.topic.split("/")
-            if len(topic_parts) < 3:
+            if len(topic_parts) < len(self._topic_prefix_parts) + 2:
                 logger.warning("Unexpected topic format: %s", msg.topic)
                 return
 
-            topic_group = topic_parts[0]
-            namespace = topic_parts[1]
-            device_id = topic_parts[2]
-            if topic_group != TOPIC_GROUP:
-                logger.warning("Unexpected topic group: %s", msg.topic)
+            topic_prefix = topic_parts[: len(self._topic_prefix_parts)]
+            if topic_prefix != self._topic_prefix_parts:
+                logger.warning("Unexpected topic prefix: %s", msg.topic)
                 return
-            if namespace not in {"telemetry", "provisioning", "status"}:
+
+            namespace_index = len(self._topic_prefix_parts)
+            namespace = topic_parts[namespace_index]
+            device_id = topic_parts[namespace_index + 1]
+            if namespace not in TOPIC_NAMESPACES:
                 logger.warning("Unexpected topic namespace: %s", msg.topic)
                 return
 

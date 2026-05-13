@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     mqtt_username: str = Field(alias="MQTT_USERNAME")
     mqtt_password: str = Field(alias="MQTT_PASSWORD")
     mqtt_crypto_master_key_hex: str = Field(alias="MQTT_CRYPTO_MASTER_KEY_HEX")
+    mqtt_topic_prefix: str = Field(default="group3", alias="MQTT_TOPIC_PREFIX")
 
     firebase_credentials_path: str = Field(
         default="firebase-credentials.json", alias="FIREBASE_CREDENTIALS_PATH"

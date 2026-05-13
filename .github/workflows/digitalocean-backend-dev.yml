@@ -1,0 +1,156 @@
+name: Deploy Backend Dev to DigitalOcean
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - "hydroponic-backend/**"
+      - ".github/workflows/digitalocean-backend-dev.yml"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - "hydroponic-backend/**"
+      - ".github/workflows/digitalocean-backend-dev.yml"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Optional PR number to deploy into the shared dev backend component"
+        required: false
+        type: string
+      component_name:
+        description: "DigitalOcean component name to override"
+        required: false
+        default: ""
+        type: string
+      component_kind:
+        description: "App spec component collection"
+        required: false
+        default: "services"
+        type: choice
+        options:
+          - services
+          - workers
+          - jobs
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: digitalocean-backend-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Trigger DigitalOcean dev deployment
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.pr_number == '') }}
+        env:
+          DIGITALOCEAN_APP_ID: ${{ vars.DIGITALOCEAN_DEV_APP_ID }}
+        run: |
+          if [ -z "$DIGITALOCEAN_APP_ID" ]; then
+            echo "DIGITALOCEAN_DEV_APP_ID repository/environment variable is missing."
+            exit 1
+          fi
+
+          doctl apps create-deployment "$DIGITALOCEAN_APP_ID" \
+            --force-rebuild \
+            --wait \
+            --format ID,Phase,Created,Updated
+
+      - name: Install yq
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.pr_number != '') }}
+        run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Deploy PR branch into dev component
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && inputs.pr_number != '') }}
+        env:
+          DIGITALOCEAN_APP_ID: ${{ vars.DIGITALOCEAN_DEV_APP_ID }}
+          DEFAULT_COMPONENT_NAME: ${{ vars.DIGITALOCEAN_DEV_COMPONENT_NAME }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_BRANCH: ${{ github.head_ref }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          COMPONENT_NAME: ${{ inputs.component_name }}
+          COMPONENT_KIND: ${{ inputs.component_kind }}
+        run: |
+          if [ -z "$DIGITALOCEAN_APP_ID" ]; then
+            echo "DIGITALOCEAN_DEV_APP_ID repository/environment variable is missing."
+            exit 1
+          fi
+          if [ -z "$COMPONENT_NAME" ]; then
+            COMPONENT_NAME="$DEFAULT_COMPONENT_NAME"
+          fi
+          if [ -z "$COMPONENT_NAME" ]; then
+            echo "Component name is missing. Set DIGITALOCEAN_DEV_COMPONENT_NAME or pass component_name manually."
+            exit 1
+          fi
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            HEAD_BRANCH="$PR_HEAD_BRANCH"
+            HEAD_REPO="$PR_HEAD_REPO"
+            PR_LABEL="#${{ github.event.pull_request.number }}"
+          else
+            HEAD_BRANCH="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref')"
+            HEAD_REPO="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.repo.full_name')"
+            PR_LABEL="#${PR_NUMBER}"
+          fi
+
+          if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "PR ${PR_LABEL} comes from ${HEAD_REPO}, but App Platform can only deploy branches from ${GITHUB_REPOSITORY} in this workflow."
+            exit 1
+          fi
+
+          echo "Deploying PR ${PR_LABEL} branch '${HEAD_BRANCH}' into ${COMPONENT_KIND}/${COMPONENT_NAME}."
+
+          doctl apps spec get "$DIGITALOCEAN_APP_ID" --format yaml > app-spec.yaml
+
+          COMPONENT_EXISTS="$(
+            COMPONENT_KIND="$COMPONENT_KIND" COMPONENT_NAME="$COMPONENT_NAME" \
+              yq -r 'any(.[env(COMPONENT_KIND)][]; .name == env(COMPONENT_NAME))' app-spec.yaml
+          )"
+          if [ "$COMPONENT_EXISTS" != "true" ]; then
+            echo "Could not find ${COMPONENT_KIND}/${COMPONENT_NAME} in the DigitalOcean app spec."
+            exit 1
+          fi
+
+          SOURCE_TYPE="$(
+            COMPONENT_KIND="$COMPONENT_KIND" COMPONENT_NAME="$COMPONENT_NAME" \
+              yq -r '.[env(COMPONENT_KIND)][] | select(.name == env(COMPONENT_NAME)) | if has("github") then "github" elif has("git") then "git" elif has("gitlab") then "gitlab" elif has("bitbucket") then "bitbucket" else "" end' app-spec.yaml
+          )"
+          if [ -z "$SOURCE_TYPE" ]; then
+            echo "Component ${COMPONENT_KIND}/${COMPONENT_NAME} does not use a git-backed source."
+            exit 1
+          fi
+
+          COMPONENT_KIND="$COMPONENT_KIND" COMPONENT_NAME="$COMPONENT_NAME" SOURCE_TYPE="$SOURCE_TYPE" HEAD_BRANCH="$HEAD_BRANCH" \
+            yq -i '(.[env(COMPONENT_KIND)][] | select(.name == env(COMPONENT_NAME)) | .[env(SOURCE_TYPE)].branch) = env(HEAD_BRANCH)' app-spec.yaml
+
+          if [ "$SOURCE_TYPE" != "git" ]; then
+            COMPONENT_KIND="$COMPONENT_KIND" COMPONENT_NAME="$COMPONENT_NAME" SOURCE_TYPE="$SOURCE_TYPE" \
+              yq -i '(.[env(COMPONENT_KIND)][] | select(.name == env(COMPONENT_NAME)) | .[env(SOURCE_TYPE)].deploy_on_push) = false' app-spec.yaml
+          fi
+
+          doctl apps update "$DIGITALOCEAN_APP_ID" \
+            --spec app-spec.yaml \
+            --update-sources \
+            --wait \
+            --format ID,InProgressDeployment.ID,Updated

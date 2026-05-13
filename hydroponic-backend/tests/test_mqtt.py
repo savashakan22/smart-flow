@@ -13,6 +13,7 @@ class TestMQTTSubscriber:
         settings.mqtt_crypto_master_key_hex = (
             "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
         )
+        settings.mqtt_topic_prefix = "group3"
         return settings
 
     @pytest.fixture
@@ -134,6 +135,54 @@ class TestMQTTSubscriber:
             callback(mock_client, None, msg)
 
             mock_influx.write_telemetry.assert_not_called()
+
+    def test_dev_topic_prefix_isolated_from_prod_topics(self, mock_settings, mock_influx):
+        mock_settings.mqtt_topic_prefix = "group3/dev"
+        mock_firestore = MagicMock()
+        mock_firestore.device_exists.return_value = True
+        mock_firestore.accept_message_sequence.return_value = True
+        mock_crypto = MagicMock()
+        mock_crypto.decrypt_message.return_value = MagicMock(
+            sequence=124,
+            payload={
+                "ec": 1.5,
+                "air_temp": 22.0,
+                "humidity": 65.0,
+                "water_level": 80.0,
+                "water_temp": 20.0,
+                "light": 500.0,
+                "timestamp": "2026-04-18T10:00:00Z",
+            },
+        )
+
+        with (
+            patch("mqtt.subscriber.get_settings", return_value=mock_settings),
+            patch("mqtt.subscriber.Client") as mock_client_class,
+            patch("mqtt.subscriber.get_influx_service", return_value=mock_influx),
+            patch("mqtt.subscriber.get_firestore_service", return_value=mock_firestore),
+            patch("mqtt.subscriber.get_alert_service") as mock_alert_service,
+            patch("mqtt.subscriber.get_crypto_service", return_value=mock_crypto),
+        ):
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+            mock_alert_service.return_value.evaluate_readings.return_value = []
+
+            from mqtt.subscriber import MQTTSubscriber
+
+            subscriber = MQTTSubscriber()
+            callback = mock_client.on_message
+
+            prod_msg = MagicMock()
+            prod_msg.topic = "group3/telemetry/esp32_001"
+            prod_msg.payload.decode.return_value = '{"protected": true}'
+            callback(mock_client, None, prod_msg)
+            mock_influx.write_telemetry.assert_not_called()
+
+            dev_msg = MagicMock()
+            dev_msg.topic = "group3/dev/telemetry/esp32_001"
+            dev_msg.payload.decode.return_value = '{"protected": true}'
+            callback(mock_client, None, dev_msg)
+            mock_influx.write_telemetry.assert_called_once()
 
     def test_on_message_provisioning_payload(self, mock_settings):
         mock_firestore = MagicMock()
