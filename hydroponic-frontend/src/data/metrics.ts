@@ -79,7 +79,7 @@ const METRIC_DEFINITIONS = [
 export function formatLastUpdated(timestamp: string | undefined): string {
   if (!timestamp) return "No recent update";
 
-  const diffMs = Date.now() - new Date(timestamp).getTime();
+  const diffMs = Date.now() - new Date(timestamp).getTime() - 3*60*60*1000;
   const diffMin = Math.max(0, Math.round(diffMs / 60000));
 
   if (diffMin < 1) return "just now";
