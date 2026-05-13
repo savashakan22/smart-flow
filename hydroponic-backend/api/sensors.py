@@ -28,10 +28,10 @@ async def get_sensor_history(
     if start is None:
         start = end - timedelta(days=30)
 
-    max_range = timedelta(days=30)
+    max_range = timedelta(days=90)
     if end - start > max_range:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Range exceeds 30 days"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Range exceeds 90 days"
         )
 
     influx = get_influx_service()

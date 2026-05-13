@@ -162,11 +162,11 @@ class TestSensorEndpoints:
         assert response.status_code == 200
         assert response.json()["count"] == 2
 
-    def test_get_history_exceeds_30_days(self):
+    def test_get_history_exceeds_90_days(self):
         self.mock_firestore.verify_device_ownership.return_value = True
 
         response = self.client.get(
-            "/sensors/esp32_001/history?start=2024-01-01T00:00:00Z&end=2024-03-01T00:00:00Z"
+            "/sensors/esp32_001/history?start=2024-01-01T00:00:00Z&end=2024-05-01T00:00:00Z"
         )
 
         assert response.status_code == 400

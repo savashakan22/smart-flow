@@ -1,4 +1,4 @@
-import type { Metric, MetricHistoryPoint } from "../types/dashboard";
+import type { Metric, MetricHistoryPoint, TimeRange } from "../types/dashboard";
 
 export type ChartPoint = {
   timestamp: string;
@@ -16,27 +16,126 @@ export type ChartDatum = {
   predicted: boolean;
 };
 
-function formatTimeLabel(timestamp: string) {
-  return new Date(timestamp).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
+function formatTimeLabel(timestamp: string, timeRange: TimeRange) {
+  const date = new Date(timestamp);
+
+  if (timeRange === "hourly") {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+
+  if (timeRange === "daily") {
+    return date.toLocaleDateString([], {
+      weekday: "short",
+      day: "numeric",
+    });
+  }
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    year: "2-digit",
   });
 }
 
-function getMetricHistory(metric: Metric): MetricHistoryPoint[] {
-  if (metric.history && metric.history.length > 1) {
-    return metric.history.slice(-8);
-  }
+function getFallbackHistory(metric: Metric, timeRange: TimeRange): MetricHistoryPoint[] {
+  const fallbackByRange = {
+    hourly: {
+      count: 8,
+      intervalMs: 20 * 60_000,
+    },
+    daily: {
+      count: 7,
+      intervalMs: 24 * 60 * 60_000,
+    },
+    weekly: {
+      count: 12,
+      intervalMs: 7 * 24 * 60 * 60_000,
+    },
+  } satisfies Record<TimeRange, { count: number; intervalMs: number }>;
 
+  const { count, intervalMs } = fallbackByRange[timeRange];
   const current = metric.value;
   const now = Date.now();
-  const fallbackValues = [current - 2, current - 1.2, current - 0.6, current - 0.2, current];
+  const fallbackValues = Array.from({ length: count }, (_, index) =>
+    Number((current - (count - 1 - index) * 0.35).toFixed(2))
+  );
 
   return fallbackValues.map((value, index) => ({
-    timestamp: new Date(now - (fallbackValues.length - 1 - index) * 20 * 60_000).toISOString(),
+    timestamp: new Date(now - (fallbackValues.length - 1 - index) * intervalMs).toISOString(),
     value,
   }));
+}
+
+function getMetricHistory(metric: Metric, timeRange: TimeRange): MetricHistoryPoint[] {
+  if (metric.history && metric.history.length > 1) {
+    return bucketMetricHistory(metric.history, timeRange);
+  }
+
+  return getFallbackHistory(metric, timeRange);
+}
+
+function getDayBucketKey(timestamp: string) {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getStartOfWeek(date: Date) {
+  const weekStart = new Date(date);
+  const day = weekStart.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  weekStart.setDate(weekStart.getDate() + diff);
+  weekStart.setHours(0, 0, 0, 0);
+  return weekStart;
+}
+
+function getWeekBucketKey(timestamp: string) {
+  return getStartOfWeek(new Date(timestamp)).toISOString();
+}
+
+function bucketMetricHistory(history: MetricHistoryPoint[], timeRange: TimeRange): MetricHistoryPoint[] {
+  const sortedHistory = [...history].sort(
+    (left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime()
+  );
+
+  if (timeRange === "hourly") {
+    return sortedHistory;
+  }
+
+  const buckets = new Map<string, MetricHistoryPoint[]>();
+
+  for (const point of sortedHistory) {
+    const key =
+      timeRange === "weekly" ? getWeekBucketKey(point.timestamp) : getDayBucketKey(point.timestamp);
+    const bucket = buckets.get(key);
+
+    if (bucket) {
+      bucket.push(point);
+    } else {
+      buckets.set(key, [point]);
+    }
+  }
+
+  return Array.from(buckets.values()).map((bucket) => {
+    const total = bucket.reduce((sum, point) => sum + point.value, 0);
+    const average = total / bucket.length;
+    const representativeTimestamp =
+      timeRange === "weekly"
+        ? getStartOfWeek(new Date(bucket[0]?.timestamp ?? Date.now())).toISOString()
+        : (bucket[Math.floor(bucket.length / 2)] ?? bucket[bucket.length - 1]).timestamp;
+
+    return {
+      timestamp: representativeTimestamp,
+      value: Number(average.toFixed(2)),
+    };
+  });
 }
 
 export function linearRegressionForecast(history: MetricHistoryPoint[], count = 3): number[] {
@@ -58,15 +157,24 @@ export function linearRegressionForecast(history: MetricHistoryPoint[], count = 
   });
 }
 
-export function buildChartPoints(metric: Metric): ChartPoint[] {
-  const history = getMetricHistory(metric);
-  const predictions = linearRegressionForecast(history, 3);
+export function buildChartPoints(
+  metric: Metric,
+  timeRange: TimeRange,
+  includeForecast = true
+): ChartPoint[] {
+  const history = getMetricHistory(metric, timeRange);
   const actualPoints = history.map((point) => ({
     timestamp: point.timestamp,
-    label: formatTimeLabel(point.timestamp),
+    label: formatTimeLabel(point.timestamp, timeRange),
     value: point.value,
     predicted: false,
   }));
+
+  if (!includeForecast) {
+    return actualPoints;
+  }
+
+  const predictions = linearRegressionForecast(history, 3);
 
   const lastTimestamp = new Date(history[history.length - 1]?.timestamp ?? Date.now());
   const previousTimestamp = new Date(history[history.length - 2]?.timestamp ?? lastTimestamp);
@@ -77,7 +185,7 @@ export function buildChartPoints(metric: Metric): ChartPoint[] {
 
     return {
       timestamp,
-      label: formatTimeLabel(timestamp),
+      label: formatTimeLabel(timestamp, timeRange),
       value,
       predicted: true,
     };
@@ -86,7 +194,7 @@ export function buildChartPoints(metric: Metric): ChartPoint[] {
   return [...actualPoints, ...predictionPoints];
 }
 
-export function buildChartData(chartPoints: ChartPoint[]): ChartDatum[] {
+export function buildChartData(chartPoints: ChartPoint[], includeForecast = true): ChartDatum[] {
   const firstPredictionIndex = chartPoints.findIndex((point) => point.predicted);
   const forecastAnchorIndex = firstPredictionIndex > 0 ? firstPredictionIndex - 1 : -1;
 
@@ -94,7 +202,8 @@ export function buildChartData(chartPoints: ChartPoint[]): ChartDatum[] {
     timestamp: point.timestamp,
     label: point.label,
     actual: point.predicted ? null : point.value,
-    forecast: point.predicted || index === forecastAnchorIndex ? point.value : null,
+    forecast:
+      includeForecast && (point.predicted || index === forecastAnchorIndex) ? point.value : null,
     value: point.value,
     predicted: Boolean(point.predicted),
   }));
