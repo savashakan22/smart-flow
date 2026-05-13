@@ -45,6 +45,17 @@
   box-shadow: var(--shadow-md);
 }
 
+.metric-card.alarm-level--warning:hover,
+.metric-card--compact.alarm-level--warning:hover {
+  border-color: color-mix(in srgb, var(--warning) 32%, var(--border));
+}
+
+.metric-card.alarm-level--alarm:hover,
+.metric-card--compact.alarm-level--alarm:hover {
+  border-color: color-mix(in srgb, var(--danger) 48%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 10%, transparent), var(--shadow-md);
+}
+
 .metric-card.active,
 .metric-card--compact.active {
   border-color: var(--primary);
