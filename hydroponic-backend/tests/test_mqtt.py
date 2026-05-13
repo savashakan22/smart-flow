@@ -14,6 +14,7 @@ class TestMQTTSubscriber:
             "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
         )
         settings.mqtt_topic_prefix = "group3"
+        settings.mqtt_allow_legacy_sequence_replay = False
         return settings
 
     @pytest.fixture
@@ -100,6 +101,7 @@ class TestMQTTSubscriber:
             subscriber = MQTTSubscriber()
             msg = MagicMock()
             msg.topic = "group3/telemetry/esp32_001"
+            msg.retain = False
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
@@ -129,6 +131,7 @@ class TestMQTTSubscriber:
 
             msg = MagicMock()
             msg.topic = "invalid/topic"
+            msg.retain = False
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
@@ -174,12 +177,14 @@ class TestMQTTSubscriber:
 
             prod_msg = MagicMock()
             prod_msg.topic = "group3/telemetry/esp32_001"
+            prod_msg.retain = False
             prod_msg.payload.decode.return_value = '{"protected": true}'
             callback(mock_client, None, prod_msg)
             mock_influx.write_telemetry.assert_not_called()
 
             dev_msg = MagicMock()
             dev_msg.topic = "group3/dev/telemetry/esp32_001"
+            dev_msg.retain = False
             dev_msg.payload.decode.return_value = '{"protected": true}'
             callback(mock_client, None, dev_msg)
             mock_influx.write_telemetry.assert_called_once()
@@ -208,6 +213,7 @@ class TestMQTTSubscriber:
             subscriber = MQTTSubscriber()
             msg = MagicMock()
             msg.topic = "group3/provisioning/esp32_001"
+            msg.retain = False
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
@@ -243,12 +249,92 @@ class TestMQTTSubscriber:
             subscriber = MQTTSubscriber()
             msg = MagicMock()
             msg.topic = "group3/telemetry/esp32_001"
+            msg.retain = False
             msg.payload.decode.return_value = '{"protected": true}'
 
             callback = mock_client.on_message
             callback(mock_client, None, msg)
 
             mock_influx.write_telemetry.assert_not_called()
+
+    def test_retained_replayed_message_is_ignored(self, mock_settings, mock_influx):
+        mock_firestore = MagicMock()
+        mock_firestore.device_exists.return_value = True
+        mock_firestore.accept_message_sequence.return_value = False
+        mock_crypto = MagicMock()
+        mock_crypto.decrypt_message.return_value = MagicMock(
+            sequence=10,
+            payload={"ec": 1.5},
+        )
+
+        with (
+            patch("mqtt.subscriber.get_settings", return_value=mock_settings),
+            patch("mqtt.subscriber.Client") as mock_client_class,
+            patch("mqtt.subscriber.get_influx_service", return_value=mock_influx),
+            patch("mqtt.subscriber.get_firestore_service", return_value=mock_firestore),
+            patch("mqtt.subscriber.get_crypto_service", return_value=mock_crypto),
+        ):
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            from mqtt.subscriber import MQTTSubscriber
+
+            subscriber = MQTTSubscriber()
+            msg = MagicMock()
+            msg.topic = "group3/status/esp32_001"
+            msg.retain = True
+            msg.payload.decode.return_value = '{"protected": true}'
+
+            callback = mock_client.on_message
+            callback(mock_client, None, msg)
+
+            mock_influx.write_telemetry.assert_not_called()
+
+    def test_legacy_sequence_replay_mode_accepts_live_telemetry(
+        self, mock_settings, mock_influx
+    ):
+        mock_settings.mqtt_allow_legacy_sequence_replay = True
+        mock_firestore = MagicMock()
+        mock_firestore.device_exists.return_value = True
+        mock_firestore.accept_message_sequence.return_value = False
+        mock_crypto = MagicMock()
+        mock_crypto.decrypt_message.return_value = MagicMock(
+            sequence=10,
+            payload={
+                "ec": 1.5,
+                "air_temp": 22.0,
+                "humidity": 65.0,
+                "water_level": 80.0,
+                "water_temp": 20.0,
+                "light": 500.0,
+                "timestamp": "2026-04-18T10:00:00Z",
+            },
+        )
+
+        with (
+            patch("mqtt.subscriber.get_settings", return_value=mock_settings),
+            patch("mqtt.subscriber.Client") as mock_client_class,
+            patch("mqtt.subscriber.get_influx_service", return_value=mock_influx),
+            patch("mqtt.subscriber.get_firestore_service", return_value=mock_firestore),
+            patch("mqtt.subscriber.get_alert_service") as mock_alert_service,
+            patch("mqtt.subscriber.get_crypto_service", return_value=mock_crypto),
+        ):
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+            mock_alert_service.return_value.evaluate_readings.return_value = []
+
+            from mqtt.subscriber import MQTTSubscriber
+
+            subscriber = MQTTSubscriber()
+            msg = MagicMock()
+            msg.topic = "group3/telemetry/esp32_001"
+            msg.retain = False
+            msg.payload.decode.return_value = '{"protected": true}'
+
+            callback = mock_client.on_message
+            callback(mock_client, None, msg)
+
+            mock_influx.write_telemetry.assert_called_once()
 
     def test_start_and_stop(self, mock_settings):
         with (

@@ -20,7 +20,14 @@ class SequenceManager {
       return false;
     }
 
-    sessionPrefix_ = prefs.getUInt("sec_epoch", 0) + 1;
+    const uint32_t storedPrefix = prefs.getUInt("sec_epoch", 0);
+    const uint32_t nextStoredPrefix = storedPrefix + 1;
+    const time_t now = time(nullptr);
+    const uint32_t clockPrefix =
+        now >= kMinimumValidUnixTime ? static_cast<uint32_t>(now) : 0;
+
+    sessionPrefix_ =
+        clockPrefix > nextStoredPrefix ? clockPrefix : nextStoredPrefix;
     prefs.putUInt("sec_epoch", sessionPrefix_);
     prefs.end();
 
@@ -33,6 +40,7 @@ class SequenceManager {
   uint64_t nextProvisioningSequence() { return nextSequence(provisioningCounter_); }
   uint64_t nextStatusSequence() { return nextSequence(statusCounter_); }
   uint64_t nextTelemetrySequence() { return nextSequence(telemetryCounter_); }
+  uint32_t sessionPrefix() const { return sessionPrefix_; }
 
  private:
   uint64_t nextSequence(uint16_t& counter) {
@@ -372,6 +380,7 @@ class BackendClient {
   }
 
   bool beginSecuritySession() { return sequences_.begin(); }
+  uint32_t securitySessionPrefix() const { return sequences_.sessionPrefix(); }
 
   int mqttState() { return mqttClient_.state(); }
 

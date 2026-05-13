@@ -66,6 +66,10 @@ jobs:
             echo "DIGITALOCEAN_DEV_APP_ID repository/environment variable is missing."
             exit 1
           fi
+          if ! [[ "$DIGITALOCEAN_APP_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            echo "DIGITALOCEAN_DEV_APP_ID must be the App Platform UUID, not the app/component name. Current value: $DIGITALOCEAN_APP_ID"
+            exit 1
+          fi
 
           doctl apps create-deployment "$DIGITALOCEAN_APP_ID" \
             --force-rebuild \
@@ -94,6 +98,10 @@ jobs:
         run: |
           if [ -z "$DIGITALOCEAN_APP_ID" ]; then
             echo "DIGITALOCEAN_DEV_APP_ID repository/environment variable is missing."
+            exit 1
+          fi
+          if ! [[ "$DIGITALOCEAN_APP_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            echo "DIGITALOCEAN_DEV_APP_ID must be the App Platform UUID, not the app/component name. Current value: $DIGITALOCEAN_APP_ID"
             exit 1
           fi
           if [ -z "$COMPONENT_NAME" ]; then

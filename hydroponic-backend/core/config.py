@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     mqtt_password: str = Field(alias="MQTT_PASSWORD")
     mqtt_crypto_master_key_hex: str = Field(alias="MQTT_CRYPTO_MASTER_KEY_HEX")
     mqtt_topic_prefix: str = Field(default="group3", alias="MQTT_TOPIC_PREFIX")
+    mqtt_allow_legacy_sequence_replay: bool = Field(
+        default=False, alias="MQTT_ALLOW_LEGACY_SEQUENCE_REPLAY"
+    )
 
     firebase_credentials_path: str = Field(
         default="firebase-credentials.json", alias="FIREBASE_CREDENTIALS_PATH"
