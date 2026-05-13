@@ -103,7 +103,7 @@ function getPolylinePoints(
 }
 
 export default function DetailedPanel({ metric }: DetailedPanelProps) {
-  const [, setNow] = useState(Date.now());
+  const [, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -167,7 +167,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
   ];
 
   return (
-    <section className="detail-panel">
+    <section className={`detail-panel alarm-level--${metric.alarmLevel}`}>
       <div className="detail-panel__header">
         <div>
           <p className="detail-panel__eyebrow">Detailed View</p>
@@ -175,7 +175,9 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
           <p className="detail-panel__description">{metric.description}</p>
         </div>
 
-        <span className="detail-panel__status-chip">{metric.statusText}</span>
+        <div className="detail-panel__alarm-block">
+          <span className="detail-panel__status-chip">{metric.statusText}</span>
+        </div>
       </div>
 
       <div className="detail-panel__layout">
@@ -191,6 +193,7 @@ export default function DetailedPanel({ metric }: DetailedPanelProps) {
             max={metric.max}
             label={metric.shortLabel}
             unit={metric.unit}
+            alarmLevel={metric.alarmLevel}
             size="lg"
           />
 

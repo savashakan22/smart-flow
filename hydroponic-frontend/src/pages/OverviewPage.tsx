@@ -96,6 +96,16 @@ export default function OverviewPage({
           />
 
           <main className="overview-page-only content-shell content-shell--overview">
+            <div className="detail-page-topbar">
+              <button
+                type="button"
+                className="back-overview-btn"
+                onClick={() => navigate("/devices")}
+              >
+                Back to devices
+              </button>
+            </div>
+
             <section className="overview-section">
               <div className="section-heading">
                 <div>

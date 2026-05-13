@@ -1,4 +1,5 @@
 export type TrendDirection = "up" | "down" | "stable";
+export type AlarmLevel = "normal" | "warning" | "alarm";
 
 export type Metric = {
   id: string;
@@ -11,6 +12,7 @@ export type Metric = {
   idealMin: number;
   idealMax: number;
   statusText: string;
+  alarmLevel: AlarmLevel;
   description: string;
   trend: TrendDirection;
   lastUpdated: string;

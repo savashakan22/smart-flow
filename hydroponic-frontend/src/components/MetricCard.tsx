@@ -8,10 +8,10 @@ type MetricCardProps = {
   onClick: (id: string) => void;
 };
 
-function getTrendLabel(trend: Metric["trend"]) {
-  if (trend === "up") return "Rising";
-  if (trend === "down") return "Falling";
-  return "Stable";
+function getAlarmLabel(alarmLevel: Metric["alarmLevel"]) {
+  if (alarmLevel === "alarm") return "High alarm";
+  if (alarmLevel === "warning") return "Warning";
+  return "Normal";
 }
 
 export default function MetricCard({
@@ -21,14 +21,16 @@ export default function MetricCard({
 }: MetricCardProps) {
   return (
     <button
-      className={`metric-card metric-card--compact ${active ? "active" : ""}`}
+      className={`metric-card metric-card--compact alarm-level--${metric.alarmLevel} ${
+        active ? "active" : ""
+      }`}
       onClick={() => onClick(metric.id)}
       type="button"
     >
       <div className="metric-card__top">
         <span className="metric-card__label">{metric.title}</span>
-        <span className={`metric-card__trend trend--${metric.trend}`}>
-          {getTrendLabel(metric.trend)}
+        <span className="metric-card__alarm-level">
+          {getAlarmLabel(metric.alarmLevel)}
         </span>
       </div>
 
@@ -39,6 +41,7 @@ export default function MetricCard({
           max={metric.max}
           label={metric.shortLabel}
           unit={metric.unit}
+          alarmLevel={metric.alarmLevel}
           size="sm"
         />
       </div>

@@ -49,12 +49,52 @@
   min-height: 42px;
   padding: 0 16px;
   border-radius: 999px;
-  background: var(--primary-soft);
-  color: var(--primary);
+  background: color-mix(in srgb, var(--success) 12%, var(--surface));
+  color: var(--success);
   font-size: 0.86rem;
   font-weight: 800;
-  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 24%, transparent);
   white-space: nowrap;
+}
+
+.detail-panel.alarm-level--warning {
+  border-color: color-mix(in srgb, var(--warning) 32%, var(--border));
+}
+
+.detail-panel.alarm-level--alarm {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 10%, transparent), var(--shadow-sm);
+}
+
+.detail-panel__alarm-block {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.detail-panel__alarm-level {
+  color: var(--success);
+  font-size: 0.9rem;
+}
+
+.detail-panel.alarm-level--warning .detail-panel__status-chip {
+  background: color-mix(in srgb, var(--warning) 14%, var(--surface));
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 28%, transparent);
+}
+
+.detail-panel.alarm-level--warning .detail-panel__alarm-level {
+  color: var(--warning);
+}
+
+.detail-panel.alarm-level--alarm .detail-panel__status-chip {
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+}
+
+.detail-panel.alarm-level--alarm .detail-panel__alarm-level {
+  color: var(--danger);
 }
 
 .detail-panel__layout {
