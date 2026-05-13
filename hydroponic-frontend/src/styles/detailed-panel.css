@@ -95,7 +95,7 @@
   .detail-panel__stat-card {
     border: 0.0625rem solid var(--border);
     border-radius: 1.5rem;
-    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    background: var(--surface);
     box-shadow: var(--shadow-sm);
   }
 

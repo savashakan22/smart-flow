@@ -19,6 +19,7 @@
   --shadow-sm: 0 8px 24px rgba(16, 24, 40, 0.06);
   --shadow-md: 0 18px 40px rgba(16, 24, 40, 0.08);
   --shadow-lg: 0 28px 60px rgba(16, 24, 40, 0.14);
+  --theme-transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, fill 0.2s ease, stroke 0.2s ease;
   --radius-xl: 28px;
   --radius-lg: 22px;
   --radius-md: 16px;
@@ -48,8 +49,11 @@
   --shadow-lg: 0 28px 60px rgba(0, 0, 0, 0.34);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  transition: var(--theme-transition);
 }
 
 html,

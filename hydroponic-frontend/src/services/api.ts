@@ -28,8 +28,17 @@ export type HistoryResponse = {
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const pendingGetRequests = new Map<string, Promise<unknown>>();
 
 async function apiRequest<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
+  const method = init.method ?? "GET";
+  const canShareRequest = method.toUpperCase() === "GET";
+  const requestKey = `${token ?? ""}:${path}`;
+
+  if (canShareRequest && pendingGetRequests.has(requestKey)) {
+    return pendingGetRequests.get(requestKey) as Promise<T>;
+  }
+
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
 
@@ -37,23 +46,34 @@ async function apiRequest<T>(path: string, init: RequestInit = {}, token?: strin
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const request = fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers,
+  }).then(async (response) => {
+    if (!response.ok) {
+      let detail = `HTTP ${response.status}`;
+      try {
+        const body = await response.json();
+        detail = body.detail ?? detail;
+      } catch {
+        // no-op
+      }
+      throw new Error(detail);
+    }
+
+    return response.json() as Promise<T>;
   });
 
-  if (!response.ok) {
-    let detail = `HTTP ${response.status}`;
+  if (canShareRequest) {
+    pendingGetRequests.set(requestKey, request);
     try {
-      const body = await response.json();
-      detail = body.detail ?? detail;
-    } catch {
-      // no-op
+      return await request;
+    } finally {
+      pendingGetRequests.delete(requestKey);
     }
-    throw new Error(detail);
   }
 
-  return response.json() as Promise<T>;
+  return request;
 }
 
 export async function fetchDevices(token: string) {
