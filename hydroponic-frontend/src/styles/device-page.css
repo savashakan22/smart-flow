@@ -43,7 +43,7 @@
 
 .device-card {
   text-align: left;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 24px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -60,6 +60,46 @@
   box-shadow: var(--shadow-md);
 }
 
+.device-card.alarm-level--warning {
+  border-color: color-mix(in srgb, var(--warning) 42%, var(--border));
+  animation: device-card-warning-pulse 1.8s ease-in-out infinite;
+}
+
+.device-card.alarm-level--alarm {
+  border-color: color-mix(in srgb, var(--danger) 42%, var(--border));
+  animation: device-card-alarm-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes device-card-warning-pulse {
+  0%,
+  100% {
+    border-width: 1px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  50% {
+    border-width: 1px;
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--warning), transparent),
+      var(--shadow-sm);
+  }
+}
+
+@keyframes device-card-alarm-pulse {
+  0%,
+  100% {
+    border-width: 1px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  50% {
+    border-width: 1px;
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--danger), transparent),
+      var(--shadow-sm);
+  }
+}
+
 .device-card__heading {
   display: flex;
   align-items: center;
@@ -72,22 +112,11 @@
   font-size: 1.1rem;
 }
 
-.device-card__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--online);
-  color: var(--surface-2);
+.device-card__updated {
+  color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.device-card__badge--offline {
-  background: rgba(239, 68, 68, 0.12);
-  color: #dc2626;
 }
 
 .device-card p {
