@@ -78,11 +78,9 @@
   }
 
   50% {
-    border-width: 2px;
+    border-width: 1px;
     box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--warning) 16%, transparent),
-      0 0 12px color-mix(in srgb, var(--warning) 12%, transparent),
-      0 0 28px color-mix(in srgb, var(--warning) 7%, transparent),
+      0 0 20px color-mix(in srgb, var(--warning), transparent),
       var(--shadow-sm);
   }
 }
@@ -95,7 +93,7 @@
   }
 
   50% {
-    border-width: 2px;
+    border-width: 1px;
     box-shadow:
       0 0 20px color-mix(in srgb, var(--danger), transparent),
       var(--shadow-sm);
