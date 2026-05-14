@@ -114,22 +114,11 @@
   font-size: 1.1rem;
 }
 
-.device-card__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--online);
-  color: var(--surface-2);
+.device-card__updated {
+  color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.device-card__badge--offline {
-  background: rgba(239, 68, 68, 0.12);
-  color: #dc2626;
 }
 
 .device-card p {

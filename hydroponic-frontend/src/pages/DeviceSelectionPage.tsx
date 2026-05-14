@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { AlarmLevel, ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
 import type { Device } from "../data/devices";
-import { mapReadingsToMetrics } from "../data/metrics";
+import { formatLastUpdated, mapReadingsToMetrics } from "../data/metrics";
 import { fetchLatestReading } from "../services/api";
 
 type Props = {
@@ -26,11 +26,13 @@ export default function DeviceSelectionPage({
   onToggleTheme,
 }: Props) {
   const navigate = useNavigate();
-  const [deviceAlarmLevels, setDeviceAlarmLevels] = useState<Record<string, AlarmLevel>>({});
+  const [deviceReadings, setDeviceReadings] = useState<
+    Record<string, { alarmLevel: AlarmLevel; lastUpdated: string }>
+  >({});
 
   useEffect(() => {
     if (!token || devices.length === 0) {
-      setDeviceAlarmLevels({});
+      setDeviceReadings({});
       return;
     }
 
@@ -45,16 +47,23 @@ export default function DeviceSelectionPage({
             const metrics = mapReadingsToMetrics(latest, []);
             const hasAlarm = metrics.some((metric) => metric.alarmLevel === "alarm");
             const hasWarning = metrics.some((metric) => metric.alarmLevel === "warning");
+            const alarmLevel = hasAlarm ? "alarm" : hasWarning ? "warning" : "normal";
 
-            return [device.id, hasAlarm ? "alarm" : hasWarning ? "warning" : "normal"] as const;
+            return [
+              device.id,
+              { alarmLevel, lastUpdated: formatLastUpdated(latest.timestamp) },
+            ] as const;
           } catch {
-            return [device.id, "normal"] as const;
+            return [
+              device.id,
+              { alarmLevel: "normal", lastUpdated: "No recent update" },
+            ] as const;
           }
         })
       );
 
       if (isMounted) {
-        setDeviceAlarmLevels(Object.fromEntries(entries));
+        setDeviceReadings(Object.fromEntries(entries));
       }
     }
 
@@ -97,17 +106,15 @@ export default function DeviceSelectionPage({
         {devices.map((device) => (
           <button
             key={device.id}
-            className={`device-card alarm-level--${deviceAlarmLevels[device.id] ?? "normal"}`}
+            className={`device-card alarm-level--${
+              deviceReadings[device.id]?.alarmLevel ?? "normal"
+            }`}
             onClick={() => navigate(`/devices/${device.id}/dashboard`)}
           >
             <div className="device-card__heading">
               <h3>{device.name}</h3>
-              <span
-                className={`device-card__badge ${
-                  device.status === "Offline" ? "device-card__badge--offline" : ""
-                }`}
-              >
-                {device.status}
+              <span className="device-card__updated">
+                {deviceReadings[device.id]?.lastUpdated ?? "No recent update"}
               </span>
             </div>
 
