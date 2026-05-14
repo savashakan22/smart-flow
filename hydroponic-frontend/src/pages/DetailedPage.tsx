@@ -21,6 +21,8 @@ type Props = {
 function getHistoryWindow(range: TimeRange, now = new Date()) {
   const end = new Date(now);
   const start = new Date(now);
+  end.setSeconds(0, 0);
+  start.setSeconds(0, 0);
 
   if (range === "hourly") {
     start.setHours(start.getHours() - 24);
