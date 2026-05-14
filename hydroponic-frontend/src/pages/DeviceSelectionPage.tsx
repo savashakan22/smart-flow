@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { ThemeMode } from "../types/dashboard";
+import type { AlarmLevel, ThemeMode } from "../types/dashboard";
 import Navbar from "../components/Navbar";
 import type { Device } from "../data/devices";
+import { mapReadingsToMetrics } from "../data/metrics";
+import { fetchLatestReading } from "../services/api";
 
 type Props = {
   theme: ThemeMode;
@@ -10,6 +13,7 @@ type Props = {
     email: string;
   };
   devices: Device[];
+  token: string | null;
   isAuthenticated: boolean;
   onToggleTheme: (mode: ThemeMode) => void;
 };
@@ -17,10 +21,49 @@ type Props = {
 export default function DeviceSelectionPage({
   theme,
   devices,
+  token,
   isAuthenticated,
   onToggleTheme,
 }: Props) {
   const navigate = useNavigate();
+  const [deviceAlarmLevels, setDeviceAlarmLevels] = useState<Record<string, AlarmLevel>>({});
+
+  useEffect(() => {
+    if (!token || devices.length === 0) {
+      setDeviceAlarmLevels({});
+      return;
+    }
+
+    let isMounted = true;
+    const authToken = token;
+
+    async function loadDeviceAlarmLevels() {
+      const entries = await Promise.all(
+        devices.map(async (device) => {
+          try {
+            const latest = await fetchLatestReading(device.id, authToken);
+            const metrics = mapReadingsToMetrics(latest, []);
+            const hasAlarm = metrics.some((metric) => metric.alarmLevel === "alarm");
+            const hasWarning = metrics.some((metric) => metric.alarmLevel === "warning");
+
+            return [device.id, hasAlarm ? "alarm" : hasWarning ? "warning" : "normal"] as const;
+          } catch {
+            return [device.id, "normal"] as const;
+          }
+        })
+      );
+
+      if (isMounted) {
+        setDeviceAlarmLevels(Object.fromEntries(entries));
+      }
+    }
+
+    loadDeviceAlarmLevels();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [devices, token]);
 
   return (
     <main className="device-selection-page">
@@ -54,7 +97,7 @@ export default function DeviceSelectionPage({
         {devices.map((device) => (
           <button
             key={device.id}
-            className="device-card"
+            className={`device-card alarm-level--${deviceAlarmLevels[device.id] ?? "normal"}`}
             onClick={() => navigate(`/devices/${device.id}/dashboard`)}
           >
             <div className="device-card__heading">

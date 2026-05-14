@@ -210,6 +210,7 @@ export default function App() {
               theme={theme}
               user={user}
               devices={devices}
+              token={token}
               isAuthenticated={isAuthenticated}
               onToggleTheme={setTheme}
             />
