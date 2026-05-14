@@ -62,10 +62,44 @@
 
 .device-card.alarm-level--warning {
   border-color: color-mix(in srgb, var(--warning) 42%, var(--border));
+  animation: device-card-warning-pulse 1.8s ease-in-out infinite;
 }
 
 .device-card.alarm-level--alarm {
   border-color: color-mix(in srgb, var(--danger) 42%, var(--border));
+  animation: device-card-alarm-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes device-card-warning-pulse {
+  0%,
+  100% {
+    border-width: 1px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  50% {
+    border-width: 2px;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--warning) 16%, transparent),
+      0 0 12px color-mix(in srgb, var(--warning) 12%, transparent),
+      0 0 28px color-mix(in srgb, var(--warning) 7%, transparent),
+      var(--shadow-sm);
+  }
+}
+
+@keyframes device-card-alarm-pulse {
+  0%,
+  100% {
+    border-width: 1px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  50% {
+    border-width: 2px;
+    box-shadow:
+      0 0 20px color-mix(in srgb, var(--danger), transparent),
+      var(--shadow-sm);
+  }
 }
 
 .device-card__heading {
