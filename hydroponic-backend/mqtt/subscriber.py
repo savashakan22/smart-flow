@@ -225,6 +225,13 @@ class MQTTSubscriber:
             if namespace not in TOPIC_NAMESPACES:
                 logger.warning("Unexpected topic namespace: %s", msg.topic)
                 return
+            if retained:
+                logger.info(
+                    "Ignoring retained %s message for %s",
+                    namespace,
+                    device_id,
+                )
+                return
 
             raw_payload = msg.payload.decode()
             payload = self._decode_and_verify(
