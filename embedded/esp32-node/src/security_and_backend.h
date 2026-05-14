@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <mbedtls/gcm.h>
 #include <mbedtls/md.h>
+#include <stdint.h>
 #include <time.h>
 
 #include "smartflow_types.h"
@@ -21,7 +22,8 @@ class SequenceManager {
     }
 
     const uint32_t storedPrefix = prefs.getUInt("sec_epoch", 0);
-    const uint32_t nextStoredPrefix = storedPrefix + 1;
+    const uint32_t nextStoredPrefix =
+        storedPrefix == UINT32_MAX ? UINT32_MAX : storedPrefix + 1;
     const time_t now = time(nullptr);
     const uint32_t clockPrefix =
         now >= kMinimumValidUnixTime ? static_cast<uint32_t>(now) : 0;
