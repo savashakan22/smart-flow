@@ -257,15 +257,11 @@ class TestMQTTSubscriber:
 
             mock_influx.write_telemetry.assert_not_called()
 
-    def test_retained_replayed_message_is_ignored(self, mock_settings, mock_influx):
+    def test_retained_message_is_ignored_before_firestore_access(
+        self, mock_settings, mock_influx
+    ):
         mock_firestore = MagicMock()
-        mock_firestore.device_exists.return_value = True
-        mock_firestore.accept_message_sequence.return_value = False
         mock_crypto = MagicMock()
-        mock_crypto.decrypt_message.return_value = MagicMock(
-            sequence=10,
-            payload={"ec": 1.5},
-        )
 
         with (
             patch("mqtt.subscriber.get_settings", return_value=mock_settings),
@@ -289,6 +285,8 @@ class TestMQTTSubscriber:
             callback(mock_client, None, msg)
 
             mock_influx.write_telemetry.assert_not_called()
+            mock_crypto.decrypt_message.assert_not_called()
+            mock_firestore.accept_message_sequence.assert_not_called()
 
     def test_legacy_sequence_replay_mode_accepts_live_telemetry(
         self, mock_settings, mock_influx
