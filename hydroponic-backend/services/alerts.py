@@ -1,46 +1,15 @@
-from copy import deepcopy
 from typing import Any, Dict, List
 
+from services.device_config import DEFAULT_THRESHOLDS
 from services.firestore import get_firestore_service
-
-DEFAULT_THRESHOLDS: Dict[str, Dict[str, Any]] = {
-    "ec": {
-        "min": 1.2,
-        "max": 2.4,
-        "recommended_action": "Dilute or enrich the nutrient solution manually.",
-    },
-    "water_temp": {
-        "min": 18.0,
-        "max": 24.0,
-        "recommended_action": "Inspect the reservoir temperature and adjust manually.",
-    },
-    "air_temp": {
-        "min": 18.0,
-        "max": 27.0,
-        "recommended_action": "Ventilate or insulate the grow area manually.",
-    },
-    "humidity": {
-        "min": 45.0,
-        "max": 75.0,
-        "recommended_action": "Adjust room humidity manually.",
-    },
-    "water_level": {
-        "min": 25.0,
-        "max": 100.0,
-        "recommended_action": "Refill or drain the reservoir manually.",
-    },
-    "light": {
-        "min": 100.0,
-        "max": 900.0,
-        "recommended_action": "Reposition or toggle the lighting manually.",
-    },
-}
 
 
 class AlertService:
     def evaluate_readings(self, device_id: str, readings: Dict[str, Any]) -> List[str]:
         firestore = get_firestore_service()
-        thresholds = deepcopy(DEFAULT_THRESHOLDS)
+        thresholds = {
+            metric: dict(rule) for metric, rule in DEFAULT_THRESHOLDS.items()
+        }
         overrides = firestore.get_device_thresholds(device_id)
 
         for metric, rule in overrides.items():

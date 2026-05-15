@@ -31,6 +31,7 @@ class TestConfig:
                     assert settings.mqtt_ip == "192.168.1.100"
                     assert settings.mqtt_username == "mqtt_user"
                     assert settings.mqtt_allow_legacy_sequence_replay is False
+                    assert settings.mqtt_config_cache_ttl_seconds == 600
 
     def test_default_values(self):
         env_vars = {

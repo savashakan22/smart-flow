@@ -1,12 +1,14 @@
 import logging
+import json
+import time
 from datetime import datetime, timezone
 from typing import Optional
 
 from paho.mqtt.client import CallbackAPIVersion, Client
 
 from core.config import get_settings
-from services.alerts import get_alert_service
 from services.crypto import ProtectedPayloadError, get_crypto_service
+from services.device_config import get_device_config_service
 from services.firestore import get_firestore_service
 from services.influx import get_influx_service
 
@@ -20,12 +22,14 @@ class MQTTSubscriber:
         settings = get_settings()
         self._topic_prefix = settings.mqtt_topic_prefix.strip("/")
         self._topic_prefix_parts = self._topic_prefix.split("/")
+        self._config_cache_ttl_seconds = settings.mqtt_config_cache_ttl_seconds
+        self._config_publish_cache: dict[str, dict[str, float | str]] = {}
         self._allow_legacy_sequence_replay = (
             settings.mqtt_allow_legacy_sequence_replay
         )
         self._client = Client(
             callback_api_version=CallbackAPIVersion.VERSION2,
-            client_id="hydroponic-backend",
+            client_id=f"hydroponic-backend-{self._topic_prefix.replace('/', '-')}",
         )
         self._client.username_pw_set(settings.mqtt_username, settings.mqtt_password)
         self._client.on_connect = self._on_connect
@@ -114,12 +118,25 @@ class MQTTSubscriber:
             "water_level_ok": payload.get("water_level_ok", True),
             "light_ok": payload.get("light_ok", True),
         }
+        alarm_state = {
+            "alarm_active": bool(payload.get("alarm_active", False)),
+            "alarm_reasons": payload.get("alarm_reasons", []),
+        }
+        if not isinstance(alarm_state["alarm_reasons"], list):
+            alarm_state["alarm_reasons"] = []
+
         logger.info("Accepted telemetry for device %s: %s", device_id, telemetry_data)
         if not sensor_health["sensor_ok"]:
             logger.warning(
                 "Telemetry for device %s contains sensor failures: %s",
                 device_id,
                 sensor_health["failed_sensors"],
+            )
+        if alarm_state["alarm_active"]:
+            logger.warning(
+                "Telemetry for device %s reports active alarm: %s",
+                device_id,
+                alarm_state["alarm_reasons"],
             )
 
         influx = get_influx_service()
@@ -133,15 +150,42 @@ class MQTTSubscriber:
                 "telemetry_schema": "v3",
                 "online": True,
                 **sensor_health,
+                **alarm_state,
             },
         )
 
-        alerts = get_alert_service().evaluate_readings(device_id, telemetry_data)
-        logger.info(
-            "Stored telemetry for device %s and generated %s alerts",
-            device_id,
-            len(alerts),
+        logger.info("Stored telemetry for device %s", device_id)
+
+    def _publish_config_if_needed(self, client, device_id: str) -> None:
+        now = time.monotonic()
+        cached = self._config_publish_cache.get(device_id)
+        if cached and now - float(cached["published_at"]) < self._config_cache_ttl_seconds:
+            return
+
+        payload = get_device_config_service().build_config_payload(device_id)
+        signature = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+        if cached and cached.get("signature") == signature:
+            cached["published_at"] = now
+            return
+
+        protected_payload = get_crypto_service().encrypt_message(
+            namespace="config",
+            device_id=device_id,
+            payload=payload,
         )
+        topic = f"{self._topic_prefix}/config/{device_id}"
+        result = client.publish(topic, protected_payload, qos=1, retain=True)
+        publish_rc = getattr(result, "rc", 0)
+        if not isinstance(publish_rc, int):
+            publish_rc = 0
+        if publish_rc == 0:
+            self._config_publish_cache[device_id] = {
+                "published_at": now,
+                "signature": signature,
+            }
+            logger.info("Published retained config for device %s to %s", device_id, topic)
+        else:
+            logger.warning("Failed to publish retained config for device %s", device_id)
 
     def _decode_and_verify(
         self,
@@ -249,6 +293,7 @@ class MQTTSubscriber:
                 self._handle_provisioning(device_id, payload)
             elif namespace == "status":
                 self._handle_status(device_id, payload)
+            self._publish_config_if_needed(client, device_id)
 
         except Exception as e:
             logger.error(f"Error processing MQTT message: {e}")

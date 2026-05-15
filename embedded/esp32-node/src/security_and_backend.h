@@ -130,6 +130,94 @@ class CryptoSuite {
     return true;
   }
 
+  bool unprotect(
+      const char* messageType,
+      const String& protectedPayload,
+      DynamicJsonDocument& plaintext) {
+    DynamicJsonDocument envelope(1024);
+    if (deserializeJson(envelope, protectedPayload)) {
+      Serial.println("Config payload is not valid JSON.");
+      return false;
+    }
+
+    if (!envelope["seq"].is<uint64_t>() || !envelope["ciphertext"].is<const char*>() ||
+        !envelope["tag"].is<const char*>()) {
+      Serial.println("Config payload is missing protected fields.");
+      return false;
+    }
+
+    const uint64_t sequence = envelope["seq"].as<uint64_t>();
+    const char* ciphertextHex = envelope["ciphertext"].as<const char*>();
+    const char* tagHex = envelope["tag"].as<const char*>();
+    const size_t ciphertextLength = strlen(ciphertextHex) / 2;
+
+    if ((strlen(ciphertextHex) % 2) != 0 || strlen(tagHex) != kTagLength * 2) {
+      Serial.println("Config payload has invalid hex lengths.");
+      return false;
+    }
+
+    uint8_t* ciphertext = static_cast<uint8_t*>(malloc(ciphertextLength));
+    uint8_t* output = static_cast<uint8_t*>(malloc(ciphertextLength + 1));
+    if (ciphertext == nullptr || output == nullptr) {
+      free(ciphertext);
+      free(output);
+      return false;
+    }
+
+    uint8_t tag[kTagLength];
+    bool success = hexToBytes(ciphertextHex, ciphertext, ciphertextLength) &&
+                   hexToBytes(tagHex, tag, sizeof(tag));
+    if (!success) {
+      free(ciphertext);
+      free(output);
+      Serial.println("Config payload contains invalid hex.");
+      return false;
+    }
+
+    uint8_t topicKey[kMasterKeyLength];
+    uint8_t nonce[12];
+    success = deriveTopicKey(topicKey, sizeof(topicKey)) &&
+              buildNonce(messageType, sequence, nonce, sizeof(nonce));
+
+    const String aadString = buildAad(messageType, sequence);
+    mbedtls_gcm_context context;
+    mbedtls_gcm_init(&context);
+    if (success &&
+        mbedtls_gcm_setkey(
+            &context, MBEDTLS_CIPHER_ID_AES, topicKey, kMasterKeyLength * 8) == 0) {
+      success = mbedtls_gcm_auth_decrypt(
+                    &context,
+                    ciphertextLength,
+                    nonce,
+                    sizeof(nonce),
+                    reinterpret_cast<const uint8_t*>(aadString.c_str()),
+                    aadString.length(),
+                    tag,
+                    sizeof(tag),
+                    ciphertext,
+                    output) == 0;
+    } else {
+      success = false;
+    }
+    mbedtls_gcm_free(&context);
+
+    if (!success) {
+      free(ciphertext);
+      free(output);
+      Serial.println("Unable to authenticate config payload.");
+      return false;
+    }
+
+    output[ciphertextLength] = '\0';
+    success = !deserializeJson(plaintext, reinterpret_cast<const char*>(output));
+    free(ciphertext);
+    free(output);
+    if (!success) {
+      Serial.println("Config plaintext is not valid JSON.");
+    }
+    return success;
+  }
+
  private:
   String deviceId_;
   uint8_t masterKey_[kMasterKeyLength] = {0};
@@ -215,6 +303,9 @@ class CryptoSuite {
     if (strcmp(messageType, "status") == 0) {
       return 3;
     }
+    if (strcmp(messageType, "config") == 0) {
+      return 4;
+    }
     return 0;
   }
 
@@ -241,6 +332,22 @@ class CryptoSuite {
     }
     return -1;
   }
+
+  bool hexToBytes(const char* hex, uint8_t* output, size_t outputLength) {
+    if (strlen(hex) != outputLength * 2) {
+      return false;
+    }
+
+    for (size_t i = 0; i < outputLength; ++i) {
+      const int high = hexToNibble(hex[i * 2]);
+      const int low = hexToNibble(hex[i * 2 + 1]);
+      if (high < 0 || low < 0) {
+        return false;
+      }
+      output[i] = static_cast<uint8_t>((high << 4) | low);
+    }
+    return true;
+  }
 };
 
 class BackendClient {
@@ -251,6 +358,9 @@ class BackendClient {
     config_ = config;
     mqttClient_.setServer(config.mqttHost.c_str(), config.mqttPort);
     mqttClient_.setBufferSize(kMqttPacketSize);
+    mqttClient_.setCallback([this](char* topic, uint8_t* payload, unsigned int length) {
+      handleMqttMessage(topic, payload, length);
+    });
     return crypto_.begin(config.deviceId);
   }
 
@@ -283,7 +393,7 @@ class BackendClient {
     }
 
     const String statusTopic = topicFor("status");
-    return mqttClient_.connect(
+    const bool connected = mqttClient_.connect(
         config_.deviceId.c_str(),
         config_.mqttUser.c_str(),
         config_.mqttPassword.c_str(),
@@ -291,6 +401,10 @@ class BackendClient {
         1,
         true,
         willPayload.c_str());
+    if (connected) {
+      mqttClient_.subscribe(topicFor("config").c_str(), 1);
+    }
+    return connected;
   }
 
   bool buildProtectedTelemetryEnvelope(
@@ -308,6 +422,7 @@ class BackendClient {
     doc["water_level"] = round2(readings.waterLevel);
     doc["water_temp"] = round2(readings.waterTemp);
     doc["light"] = round2(readings.light);
+    doc["alarm_active"] = readings.alarmActive;
     doc["sensor_ok"] = readings.sensorOk();
     doc["sensor_error_count"] = readings.sensorErrorCount();
     doc["aht_ok"] = readings.ahtOk;
@@ -332,6 +447,9 @@ class BackendClient {
     if (!readings.lightOk) {
       failedSensors.add("light");
     }
+
+    JsonArray alarmReasons = doc["alarm_reasons"].to<JsonArray>();
+    addCsvToArray(readings.alarmReasons, alarmReasons);
 
     return crypto_.protect("telemetry", sequences_.nextTelemetrySequence(), doc, protectedPayload);
   }
@@ -384,6 +502,22 @@ class BackendClient {
   bool beginSecuritySession() { return sequences_.begin(); }
   uint32_t securitySessionPrefix() const { return sequences_.sessionPrefix(); }
 
+  bool syncThresholdConfig(ThresholdConfig& thresholds) {
+    pendingThresholds_ = thresholds;
+    pendingConfigReceived_ = false;
+    const uint32_t deadline = millis() + kConfigSyncWaitMs;
+    while (millis() < deadline) {
+      mqttClient_.loop();
+      if (pendingConfigReceived_) {
+        thresholds = pendingThresholds_;
+        pendingConfigReceived_ = false;
+        return true;
+      }
+      delay(kConfigSyncPollMs);
+    }
+    return false;
+  }
+
   int mqttState() { return mqttClient_.state(); }
 
   void settleAndDisconnect() {
@@ -404,6 +538,8 @@ class BackendClient {
   DeviceConfig config_;
   SequenceManager sequences_;
   CryptoSuite crypto_;
+  ThresholdConfig pendingThresholds_;
+  bool pendingConfigReceived_ = false;
 
   bool buildProtectedStatusEnvelope(bool online, String& protectedPayload) {
     DynamicJsonDocument doc(256);
@@ -415,6 +551,76 @@ class BackendClient {
 
   String topicFor(const char* messageType) {
     return String(kMqttTopicPrefix) + "/" + messageType + "/" + config_.deviceId;
+  }
+
+  void handleMqttMessage(char* topic, uint8_t* payload, unsigned int length) {
+    if (String(topic) != topicFor("config")) {
+      return;
+    }
+
+    String protectedPayload;
+    protectedPayload.reserve(length);
+    for (unsigned int i = 0; i < length; ++i) {
+      protectedPayload += static_cast<char>(payload[i]);
+    }
+
+    DynamicJsonDocument doc(1536);
+    if (!crypto_.unprotect("config", protectedPayload, doc)) {
+      Serial.println("Received config could not be decrypted.");
+      return;
+    }
+
+    if (doc["device_id"].as<String>() != config_.deviceId ||
+        doc["schema"].as<String>() != "thresholds.v1") {
+      Serial.println("Received config does not match this device or schema.");
+      return;
+    }
+
+    ThresholdConfig parsed = pendingThresholds_;
+    JsonObject thresholds = doc["thresholds"].as<JsonObject>();
+    if (thresholds.isNull()) {
+      Serial.println("Received config is missing thresholds.");
+      return;
+    }
+
+    applyThreshold(thresholds, "ec", parsed.ec);
+    applyThreshold(thresholds, "water_temp", parsed.waterTemp);
+    applyThreshold(thresholds, "air_temp", parsed.airTemp);
+    applyThreshold(thresholds, "humidity", parsed.humidity);
+    applyThreshold(thresholds, "water_level", parsed.waterLevel);
+    applyThreshold(thresholds, "light", parsed.light);
+
+    pendingThresholds_ = parsed;
+    pendingConfigReceived_ = true;
+    Serial.println("Received retained threshold config.");
+  }
+
+  void applyThreshold(JsonObject thresholds, const char* key, MetricThreshold& target) {
+    JsonObject rule = thresholds[key].as<JsonObject>();
+    if (rule.isNull()) {
+      return;
+    }
+    if (rule["min"].is<float>()) {
+      target.min = rule["min"].as<float>();
+    }
+    if (rule["max"].is<float>()) {
+      target.max = rule["max"].as<float>();
+    }
+  }
+
+  void addCsvToArray(const String& csv, JsonArray& output) {
+    int start = 0;
+    while (start < csv.length()) {
+      int comma = csv.indexOf(',', start);
+      if (comma < 0) {
+        comma = csv.length();
+      }
+      const String item = csv.substring(start, comma);
+      if (item.length() > 0) {
+        output.add(item);
+      }
+      start = comma + 1;
+    }
   }
 
   bool isClockSynchronized() {

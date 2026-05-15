@@ -59,6 +59,50 @@ class ConfigStore {
     return true;
   }
 
+  bool loadThresholdConfig(ThresholdConfig& thresholds) {
+    Preferences prefs;
+    if (!prefs.begin(kPrefsNamespace, true)) {
+      return false;
+    }
+
+    thresholds.ec.min = prefs.getFloat("ec_min", thresholds.ec.min);
+    thresholds.ec.max = prefs.getFloat("ec_max", thresholds.ec.max);
+    thresholds.waterTemp.min = prefs.getFloat("wt_min", thresholds.waterTemp.min);
+    thresholds.waterTemp.max = prefs.getFloat("wt_max", thresholds.waterTemp.max);
+    thresholds.airTemp.min = prefs.getFloat("at_min", thresholds.airTemp.min);
+    thresholds.airTemp.max = prefs.getFloat("at_max", thresholds.airTemp.max);
+    thresholds.humidity.min = prefs.getFloat("hum_min", thresholds.humidity.min);
+    thresholds.humidity.max = prefs.getFloat("hum_max", thresholds.humidity.max);
+    thresholds.waterLevel.min = prefs.getFloat("wl_min", thresholds.waterLevel.min);
+    thresholds.waterLevel.max = prefs.getFloat("wl_max", thresholds.waterLevel.max);
+    thresholds.light.min = prefs.getFloat("li_min", thresholds.light.min);
+    thresholds.light.max = prefs.getFloat("li_max", thresholds.light.max);
+    prefs.end();
+    return true;
+  }
+
+  bool saveThresholdConfig(const ThresholdConfig& thresholds) {
+    Preferences prefs;
+    if (!prefs.begin(kPrefsNamespace, false)) {
+      return false;
+    }
+
+    prefs.putFloat("ec_min", thresholds.ec.min);
+    prefs.putFloat("ec_max", thresholds.ec.max);
+    prefs.putFloat("wt_min", thresholds.waterTemp.min);
+    prefs.putFloat("wt_max", thresholds.waterTemp.max);
+    prefs.putFloat("at_min", thresholds.airTemp.min);
+    prefs.putFloat("at_max", thresholds.airTemp.max);
+    prefs.putFloat("hum_min", thresholds.humidity.min);
+    prefs.putFloat("hum_max", thresholds.humidity.max);
+    prefs.putFloat("wl_min", thresholds.waterLevel.min);
+    prefs.putFloat("wl_max", thresholds.waterLevel.max);
+    prefs.putFloat("li_min", thresholds.light.min);
+    prefs.putFloat("li_max", thresholds.light.max);
+    prefs.end();
+    return true;
+  }
+
   void clear() {
     Preferences prefs;
     if (prefs.begin(kPrefsNamespace, false)) {

@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     mqtt_allow_legacy_sequence_replay: bool = Field(
         default=False, alias="MQTT_ALLOW_LEGACY_SEQUENCE_REPLAY"
     )
+    mqtt_config_cache_ttl_seconds: int = Field(
+        default=600, alias="MQTT_CONFIG_CACHE_TTL_SECONDS"
+    )
 
     firebase_credentials_path: str = Field(
         default="firebase-credentials.json", alias="FIREBASE_CREDENTIALS_PATH"

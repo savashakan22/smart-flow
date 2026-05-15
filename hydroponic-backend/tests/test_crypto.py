@@ -42,3 +42,30 @@ class TestCryptoService:
 
         assert protected.sequence == sequence
         assert protected.payload == payload
+
+    def test_encrypt_message_round_trips_config_payload(self):
+        service = object.__new__(CryptoService)
+        service._master_key = bytes.fromhex(
+            "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+        )
+
+        payload = {
+            "device_id": "esp32_001",
+            "schema": "thresholds.v1",
+            "thresholds": {"ec": {"min": 1.2, "max": 2.4}},
+        }
+
+        raw_payload = service.encrypt_message(
+            namespace="config",
+            device_id="esp32_001",
+            payload=payload,
+            sequence=99,
+        )
+        protected = service.decrypt_message(
+            namespace="config",
+            device_id="esp32_001",
+            raw_payload=raw_payload,
+        )
+
+        assert protected.sequence == 99
+        assert protected.payload == payload

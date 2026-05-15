@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import json
+import time
 from dataclasses import dataclass
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -69,6 +70,36 @@ class CryptoService:
 
         return ProtectedMessage(sequence=sequence, payload=payload)
 
+    def encrypt_message(
+        self,
+        *,
+        namespace: str,
+        device_id: str,
+        payload: dict,
+        sequence: int | None = None,
+    ) -> str:
+        if sequence is None:
+            sequence = time.time_ns()
+
+        topic_key = self._derive_topic_key(device_id)
+        aad = self._build_aad(namespace, device_id, sequence)
+        nonce = self._build_nonce(namespace, sequence)
+        plaintext = json.dumps(
+            payload,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+        ciphertext = AESGCM(topic_key).encrypt(nonce, plaintext, aad)
+
+        return json.dumps(
+            {
+                "seq": sequence,
+                "ciphertext": ciphertext[:-16].hex(),
+                "tag": ciphertext[-16:].hex(),
+            },
+            separators=(",", ":"),
+        )
+
     def _derive_topic_key(self, device_id: str) -> bytes:
         return hmac.new(
             self._master_key,
@@ -85,6 +116,7 @@ class CryptoService:
             "telemetry": 1,
             "provisioning": 2,
             "status": 3,
+            "config": 4,
         }
         if namespace not in namespace_codes:
             raise ProtectedPayloadError("Unsupported namespace for nonce derivation")

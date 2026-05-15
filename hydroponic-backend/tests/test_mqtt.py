@@ -15,6 +15,7 @@ class TestMQTTSubscriber:
         )
         settings.mqtt_topic_prefix = "group3"
         settings.mqtt_allow_legacy_sequence_replay = False
+        settings.mqtt_config_cache_ttl_seconds = 600
         return settings
 
     @pytest.fixture
@@ -81,6 +82,8 @@ class TestMQTTSubscriber:
                 "tds_ok": True,
                 "water_level_ok": True,
                 "light_ok": True,
+                "alarm_active": True,
+                "alarm_reasons": ["ec_high"],
             },
         )
 
@@ -89,12 +92,10 @@ class TestMQTTSubscriber:
             patch("mqtt.subscriber.Client") as mock_client_class,
             patch("mqtt.subscriber.get_influx_service", return_value=mock_influx),
             patch("mqtt.subscriber.get_firestore_service", return_value=mock_firestore),
-            patch("mqtt.subscriber.get_alert_service") as mock_alert_service,
             patch("mqtt.subscriber.get_crypto_service", return_value=mock_crypto),
         ):
             mock_client = MagicMock()
             mock_client_class.return_value = mock_client
-            mock_alert_service.return_value.evaluate_readings.return_value = []
 
             from mqtt.subscriber import MQTTSubscriber
 
@@ -115,6 +116,15 @@ class TestMQTTSubscriber:
             assert status_payload["telemetry_schema"] == "v3"
             assert status_payload["sensor_ok"] is False
             assert status_payload["failed_sensors"] == ["ds18b20"]
+            assert status_payload["alarm_active"] is True
+            assert status_payload["alarm_reasons"] == ["ec_high"]
+            assert mock_crypto.encrypt_message.call_args.kwargs["namespace"] == "config"
+            mock_client.publish.assert_called_once_with(
+                "group3/config/esp32_001",
+                mock_crypto.encrypt_message.return_value,
+                qos=1,
+                retain=True,
+            )
 
     def test_on_message_invalid_topic(self, mock_settings, mock_influx):
         with (
@@ -163,12 +173,10 @@ class TestMQTTSubscriber:
             patch("mqtt.subscriber.Client") as mock_client_class,
             patch("mqtt.subscriber.get_influx_service", return_value=mock_influx),
             patch("mqtt.subscriber.get_firestore_service", return_value=mock_firestore),
-            patch("mqtt.subscriber.get_alert_service") as mock_alert_service,
             patch("mqtt.subscriber.get_crypto_service", return_value=mock_crypto),
         ):
             mock_client = MagicMock()
             mock_client_class.return_value = mock_client
-            mock_alert_service.return_value.evaluate_readings.return_value = []
 
             from mqtt.subscriber import MQTTSubscriber
 
@@ -314,12 +322,10 @@ class TestMQTTSubscriber:
             patch("mqtt.subscriber.Client") as mock_client_class,
             patch("mqtt.subscriber.get_influx_service", return_value=mock_influx),
             patch("mqtt.subscriber.get_firestore_service", return_value=mock_firestore),
-            patch("mqtt.subscriber.get_alert_service") as mock_alert_service,
             patch("mqtt.subscriber.get_crypto_service", return_value=mock_crypto),
         ):
             mock_client = MagicMock()
             mock_client_class.return_value = mock_client
-            mock_alert_service.return_value.evaluate_readings.return_value = []
 
             from mqtt.subscriber import MQTTSubscriber
 

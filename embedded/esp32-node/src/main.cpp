@@ -11,6 +11,7 @@ ConfigStore configStore;
 TelemetryBuffer telemetryBuffer;
 BackendClient backendClient;
 OnboardingPortal onboardingPortal;
+ThresholdConfig thresholdConfig;
 
 enum class BootButtonAction {
   None,
@@ -31,7 +32,7 @@ void logDeviceIdentity(const DeviceConfig& config) {
 
 void logReadings(const SensorReadings& readings, const char* label) {
   Serial.printf(
-      "%s ec=%.2f air_temp=%.2f humidity=%.2f water_level=%.2f water_temp=%.2f light=%.2f sensor_ok=%s\n",
+      "%s ec=%.2f air_temp=%.2f humidity=%.2f water_level=%.2f water_temp=%.2f light=%.2f sensor_ok=%s alarm=%s\n",
       label,
       readings.ec,
       readings.airTemp,
@@ -39,7 +40,8 @@ void logReadings(const SensorReadings& readings, const char* label) {
       readings.waterLevel,
       readings.waterTemp,
       readings.light,
-      readings.sensorOk() ? "yes" : "no");
+      readings.sensorOk() ? "yes" : "no",
+      readings.alarmActive ? "yes" : "no");
   if (!readings.sensorOk()) {
     Serial.print("Sensor failures:");
     if (!readings.ahtOk) {
@@ -58,6 +60,9 @@ void logReadings(const SensorReadings& readings, const char* label) {
       Serial.print(" light");
     }
     Serial.println();
+  }
+  if (readings.alarmActive) {
+    Serial.printf("Alarm reasons: %s\n", readings.alarmReasons.c_str());
   }
 }
 
@@ -122,6 +127,82 @@ BootButtonAction detectBootButtonAction() {
   return BootButtonAction::None;
 }
 
+void setupAlarmLed() {
+  pinMode(kAlarmLedPin, OUTPUT);
+  digitalWrite(kAlarmLedPin, LOW);
+}
+
+void setAlarmLed(bool active) { digitalWrite(kAlarmLedPin, active ? HIGH : LOW); }
+
+void addRangeAlarm(
+    SensorReadings& readings,
+    float value,
+    const MetricThreshold& threshold,
+    const char* lowReason,
+    const char* highReason) {
+  if (value < threshold.min) {
+    readings.addAlarmReason(lowReason);
+  } else if (value > threshold.max) {
+    readings.addAlarmReason(highReason);
+  }
+}
+
+void evaluateAlarm(SensorReadings& readings, const ThresholdConfig& thresholds) {
+  readings.clearAlarm();
+
+  if (!readings.ahtOk) {
+    readings.addAlarmReason("sensor_aht25_failed");
+  }
+  if (!readings.ds18b20Ok) {
+    readings.addAlarmReason("sensor_ds18b20_failed");
+  }
+  if (!readings.tdsOk) {
+    readings.addAlarmReason("sensor_tds_failed");
+  }
+  if (!readings.waterLevelOk) {
+    readings.addAlarmReason("sensor_water_level_failed");
+  }
+  if (!readings.lightOk) {
+    readings.addAlarmReason("sensor_light_failed");
+  }
+
+  addRangeAlarm(readings, readings.ec, thresholds.ec, "ec_low", "ec_high");
+  addRangeAlarm(
+      readings,
+      readings.waterTemp,
+      thresholds.waterTemp,
+      "water_temp_low",
+      "water_temp_high");
+  addRangeAlarm(
+      readings,
+      readings.airTemp,
+      thresholds.airTemp,
+      "air_temp_low",
+      "air_temp_high");
+  addRangeAlarm(
+      readings,
+      readings.humidity,
+      thresholds.humidity,
+      "humidity_low",
+      "humidity_high");
+  addRangeAlarm(
+      readings,
+      readings.waterLevel,
+      thresholds.waterLevel,
+      "water_level_low",
+      "water_level_high");
+  addRangeAlarm(readings, readings.light, thresholds.light, "light_low", "light_high");
+}
+
+bool readTelemetrySample(SensorReadings& readings) {
+  if (!sensorSuite.read(readings)) {
+    return false;
+  }
+  evaluateAlarm(readings, thresholdConfig);
+  setAlarmLed(readings.alarmActive);
+  return true;
+}
+
 void bufferCurrentReading(const SensorReadings& readings) {
   String protectedPayload;
   if (backendClient.buildProtectedTelemetryEnvelope(readings, protectedPayload)) {
@@ -130,6 +211,7 @@ void bufferCurrentReading(const SensorReadings& readings) {
 }
 
 void goToDeepSleep(uint32_t sleepSeconds) {
+  setAlarmLed(false);
   Serial.printf("Sleeping for %lu seconds\n", static_cast<unsigned long>(sleepSeconds));
   esp_sleep_enable_timer_wakeup(static_cast<uint64_t>(sleepSeconds) * 1000000ULL);
   esp_deep_sleep_start();
@@ -142,8 +224,10 @@ void setup() {
 
   Serial.begin(kSerialBaud);
   delay(100);
+  setupAlarmLed();
   DeviceConfig config;
   configStore.load(config);
+  configStore.loadThresholdConfig(thresholdConfig);
   logDeviceIdentity(config);
   Serial.println(
       "After boot, press BOOT within 3s for portal or hold about 2s for factory reset.");
@@ -167,6 +251,8 @@ void setup() {
 
   if (!sensorSuite.begin()) {
     Serial.println("Sensor initialization failed.");
+    setAlarmLed(true);
+    delay(500);
     goToDeepSleep(config.sleepSeconds);
   }
 
@@ -188,7 +274,7 @@ void setup() {
       goToDeepSleep(config.sleepSeconds);
     }
     SensorReadings readings;
-    if (sensorSuite.read(readings)) {
+    if (readTelemetrySample(readings)) {
       logReadings(readings, "Buffering offline telemetry:");
       bufferCurrentReading(readings);
     }
@@ -214,7 +300,7 @@ void setup() {
         config.mqttUser.length() > 0 ? "set" : "empty",
         config.mqttPassword.length() > 0 ? "set" : "empty");
     SensorReadings readings;
-    if (sensorSuite.read(readings)) {
+    if (readTelemetrySample(readings)) {
       logReadings(readings, "Buffering offline telemetry:");
       bufferCurrentReading(readings);
     }
@@ -237,6 +323,13 @@ void setup() {
   Serial.printf(
       "Online status publish %s\n", onlineStatusPublished ? "succeeded" : "failed");
 
+  if (backendClient.syncThresholdConfig(thresholdConfig)) {
+    configStore.saveThresholdConfig(thresholdConfig);
+    Serial.println("Threshold config synced and saved.");
+  } else {
+    Serial.println("Threshold config not received; using saved/default thresholds.");
+  }
+
   const bool flushSucceeded = telemetryBuffer.flush([&](const String& payload) {
     const bool published = backendClient.publishBufferedPayload(payload);
     Serial.printf("Buffered telemetry publish %s\n", published ? "succeeded" : "failed");
@@ -245,7 +338,7 @@ void setup() {
   Serial.printf("Buffered telemetry flush %s\n", flushSucceeded ? "completed" : "failed");
 
   SensorReadings current;
-  if (sensorSuite.read(current)) {
+  if (readTelemetrySample(current)) {
     logReadings(current, "Telemetry sample:");
     if (!backendClient.publishTelemetry(current)) {
       Serial.println("Telemetry publish failed, buffering payload.");
