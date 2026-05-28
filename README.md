@@ -65,8 +65,10 @@ VITE_FIREBASE_APP_ID=...
 ```bash
 cd hydroponic-backend
 pip install -r requirements.txt
-uvicorn main:app
+uvicorn main:app --reload
 ```
+
+For production-style hosting, use `uvicorn main:app --host 0.0.0.0 --port $PORT` (see `Procfile`).
 
 ### Backend environment variables
 The backend loads configuration from `hydroponic-backend/.env` (see `core/config.py`).
