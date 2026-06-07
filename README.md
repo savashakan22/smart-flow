@@ -21,7 +21,7 @@ Smart-Flow is an IoT smart hydroponics platform that connects ESP32 sensor nodes
 - **Tools**: Python sensor simulator for end-to-end pipeline testing without hardware.
 
 ## Architecture
-<img width="3480" height="2327" alt="rapor3_arch_trans" src="https://github.com/user-attachments/assets/b995bae8-b68a-457d-be31-0a6d0f9cad0e" />
+<img width="3480" height="2327" alt="rapor3_arch" src="https://github.com/user-attachments/assets/304fff78-4c17-4794-8dbb-524e8d236b08" />
 1. ESP32 nodes publish encrypted telemetry to MQTT topics (`group3/telemetry/<device_id>`).
 2. The backend subscribes, decrypts, validates sequence numbers, and writes readings to InfluxDB.
 3. Firestore stores device registry, claims, and configuration data.
